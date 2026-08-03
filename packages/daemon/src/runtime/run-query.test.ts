@@ -1,5 +1,5 @@
 import type { Query, SDKMessage } from "@anthropic-ai/claude-agent-sdk";
-import type { EventDelta } from "@sidecodeapp/protocol";
+import type { EventDelta } from "@thinkite/protocol";
 import { describe, expect, it, vi } from "vitest";
 import {
   ensureSessionLoop,

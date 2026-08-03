@@ -3,7 +3,7 @@ import {
   clientFrame,
   type DaemonFrame,
   PROTOCOL_VERSION,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import type { CommandContext, CommandHandler } from "./command.ts";
 
 /**

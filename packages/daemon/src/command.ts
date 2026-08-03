@@ -1,4 +1,4 @@
-import type { Command, DaemonFrame } from "@sidecodeapp/protocol";
+import type { Command, DaemonFrame } from "@thinkite/protocol";
 
 /**
  * Per-peer dispatch context handed to every command handler invocation.

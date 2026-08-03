@@ -54,7 +54,7 @@ jobs:
       - name: Tests
         run: bun run test # root script -> vitest (node shebang), NOT `bun test`
 
-  # Guard for sidecodeapp/sidecode#7: the wire contract's version IS
+  # Guard for thinkite/thinkite#7: the wire contract's version IS
   # packages/protocol/package.json `version` (PROTOCOL_VERSION reads it at
   # module load). A schema change without a bump means two ends running
   # different wire shapes still pass the handshake and break in opaque ways.

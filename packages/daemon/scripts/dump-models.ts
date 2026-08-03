@@ -14,7 +14,7 @@
  *
  * Run from repo root:
  *
- *   pnpm --filter @sidecodeapp/daemon exec tsx scripts/dump-models.ts
+ *   pnpm --filter @thinkite/daemon exec tsx scripts/dump-models.ts
  *
  * or:
  *

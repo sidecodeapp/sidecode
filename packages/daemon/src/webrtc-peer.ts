@@ -16,7 +16,7 @@ import {
   isChunkEnvelope,
   isProtocolCompatible,
   PROTOCOL_VERSION,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 // node-datachannel (libdatachannel NAPI) through its W3C polyfill layer.
 // Loaded lazily: the native .node binding only exists where install
 // scripts ran (node/pnpm trees, deno auto-mode trees) — never in deno

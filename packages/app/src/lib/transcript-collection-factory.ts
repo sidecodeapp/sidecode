@@ -1,4 +1,4 @@
-import type { ImageAttachment, TimelineItem } from "@sidecodeapp/protocol";
+import type { ImageAttachment, TimelineItem } from "@thinkite/protocol";
 import {
   type Collection,
   createCollection,

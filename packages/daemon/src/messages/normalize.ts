@@ -5,8 +5,8 @@ import type {
   TimelineItem,
   ToolCallItem,
   TurnUsage,
-} from "@sidecodeapp/protocol";
-import { assistantStopReason } from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
+import { assistantStopReason } from "@thinkite/protocol";
 import {
   assistantContentBlock,
   attachOutputToDetail,
@@ -51,7 +51,7 @@ import {
  * CANCEL/REJECT members of the CLI's `SYNTHETIC_MESSAGES` never fire). The
  * broader synthetic-content family — `<command-name>` / `<local-command-*>`
  * slash echoes, `<bash-*>` blocks, `<system-reminder>` (often inline, needs
- * stripping not dropping) — is tracked in sidecodeapp/sidecode#12.
+ * stripping not dropping) — is tracked in thinkite/thinkite#12.
  *
  * Mirrors the CLI's INTERRUPT_MESSAGE / INTERRUPT_MESSAGE_FOR_TOOL_USE
  * constants (utils/messages.ts). Exact-text match: the interrupt markers
@@ -73,7 +73,7 @@ export function normalize(messages: readonly SessionMessage[]): TimelineItem[] {
     // `compactMetadata` so we can't differentiate compact_boundary
     // from stop_hook_summary. Resume therefore has no compact_divider
     // for V0; live path produces dividers via run-query.ts handling
-    // SDKCompactBoundaryMessage directly. See sidecodeapp/sidecode#13.
+    // SDKCompactBoundaryMessage directly. See thinkite/thinkite#13.
     if (sdkMsg.type === "system") continue;
     const env = sdkMsg.message;
     if (typeof env !== "object" || env === null) continue;

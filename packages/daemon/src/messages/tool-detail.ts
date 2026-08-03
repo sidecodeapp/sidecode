@@ -20,7 +20,7 @@
  * unifiedDiff format only touches one place.
  */
 
-import { grepMode, type ToolCallDetail } from "@sidecodeapp/protocol";
+import { grepMode, type ToolCallDetail } from "@thinkite/protocol";
 import { structuredPatch } from "diff";
 import { z } from "zod";
 import { detectLanguageForPath } from "./language-detect.ts";

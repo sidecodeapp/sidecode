@@ -36,7 +36,7 @@
  * the concrete type at composition time.
  */
 
-import type { SessionState } from "@sidecodeapp/protocol";
+import type { SessionState } from "@thinkite/protocol";
 import {
   buildNewSidecodeSession,
   listSidecodeSessions,

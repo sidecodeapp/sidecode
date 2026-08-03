@@ -1,4 +1,4 @@
-import type { TimelineItem } from "@sidecodeapp/protocol";
+import type { TimelineItem } from "@thinkite/protocol";
 import { describe, expect, it, vi } from "vitest";
 import { type RuntimeQueryHandle, SessionRuntime } from "./session-runtime.ts";
 

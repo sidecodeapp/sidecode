@@ -18,7 +18,7 @@ import {
   CommandLineIcon,
   DocumentPlusIcon,
 } from "@heroicons/react/24/outline";
-import { MODELS, prettyModel } from "@sidecodeapp/protocol";
+import { MODELS, prettyModel } from "@thinkite/protocol";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";

@@ -11,7 +11,7 @@
 // `ws` is per-socket listeners (unlike Bun.serve's handler-per-server API
 // this replaced), so index.ts just hands the upgraded socket here — no
 // ws.data discriminant dance.
-import type { Daemon } from "@sidecodeapp/daemon";
+import type { Daemon } from "@thinkite/daemon";
 import type { WebSocket } from "ws";
 
 export function attachRpc(ws: WebSocket, daemon: Daemon): void {

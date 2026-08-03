@@ -1,5 +1,5 @@
 {
-  "name": "@sidecodeapp/app",
+  "name": "@thinkite/app",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -27,7 +27,7 @@
     "@pierre/theme": "^1.0.3",
     "@shikijs/core": "^4.2.0",
     "@shikijs/langs": "^4.2.0",
-    "@sidecodeapp/protocol": "workspace:*",
+    "@thinkite/protocol": "workspace:*",
     "@swmansion/react-native-bottom-sheet": "0.15.3",
     "@tanstack/react-db": "catalog:",
     "@tanstack/react-query": "^5.101.0",

@@ -1,5 +1,5 @@
-import type { Command, DaemonFrame } from "@sidecodeapp/protocol";
-import { PROTOCOL_VERSION } from "@sidecodeapp/protocol";
+import type { Command, DaemonFrame } from "@thinkite/protocol";
+import { PROTOCOL_VERSION } from "@thinkite/protocol";
 import { describe, expect, it, vi } from "vitest";
 import type { CommandContext, CommandHandler } from "./command.ts";
 import { createLocalConnection } from "./local-connection.ts";

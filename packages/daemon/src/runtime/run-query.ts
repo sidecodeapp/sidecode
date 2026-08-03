@@ -59,7 +59,7 @@ import type {
   EventDelta,
   ImageAttachment,
   ToolCallDetail,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import {
   attachOutputToDetail,
   buildDetailFromInput,

@@ -1,4 +1,4 @@
-import { MODEL_METADATA, type TurnUsage } from "@sidecodeapp/protocol";
+import { MODEL_METADATA, type TurnUsage } from "@thinkite/protocol";
 import { type ContextUsage, computeContextUsage } from "@/lib/context-usage";
 
 /**

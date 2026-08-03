@@ -6,12 +6,12 @@ import type {
   EventDelta,
   TimelineItem,
   TurnUsage,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import {
   isWhitelistedCommand,
   parseSlashCommand,
   SLASH_COMMANDS,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import type { BridgeService } from "./bridge/bridge-service.ts";
 import { OAuthRefreshError } from "./bridge/oauth-refresh.ts";
 import type { CommandHandler } from "./command.ts";

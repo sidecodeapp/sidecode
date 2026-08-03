@@ -4,7 +4,7 @@ import {
   parseSlashCommand,
   SLASH_COMMANDS,
   type SlashCommandSpec,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import * as Burnt from "burnt";
 import { GlassView } from "expo-glass-effect";
 import { Stack } from "expo-router";

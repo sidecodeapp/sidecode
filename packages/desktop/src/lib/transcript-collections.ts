@@ -1,4 +1,4 @@
-import type { TimelineItem } from "@sidecodeapp/protocol";
+import type { TimelineItem } from "@thinkite/protocol";
 import {
   type Collection,
   createCollection,

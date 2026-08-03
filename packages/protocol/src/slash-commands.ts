@@ -13,7 +13,7 @@
  *     daemon rejects with an `error` envelope as defense-in-depth.
  *   - No fall-through to "treat unknown /foo as prompt text" (Claude
  *     Code does fall through; sidecode deliberately doesn't). See
- *     sidecodeapp/sidecode#10 for the trade-off discussion.
+ *     thinkite/thinkite#10 for the trade-off discussion.
  *
  * Per-command `handling`:
  *
@@ -29,7 +29,7 @@
  *     and `/model` (reuses the existing `setSessionSelection` RPC).
  *
  * V0.5+ adds `/fork`, `/rename`, `/rewind` — all intercept-handling.
- * See sidecodeapp/sidecode#10 for design notes.
+ * See thinkite/thinkite#10 for design notes.
  *
  * @[CLAUDE CODE COMMAND DRIFT] Claude Code ships new commands roughly
  * weekly. Sidecode is deliberately a curated subset; we don't track

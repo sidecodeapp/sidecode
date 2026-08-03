@@ -2,7 +2,7 @@ import {
   getSessionInfo,
   getSessionMessages,
 } from "@anthropic-ai/claude-agent-sdk";
-import { type EventDelta, PROTOCOL_VERSION } from "@sidecodeapp/protocol";
+import { type EventDelta, PROTOCOL_VERSION } from "@thinkite/protocol";
 import { BridgeService } from "./bridge/bridge-service.ts";
 import { OAuthRefreshManager } from "./bridge/oauth-refresh.ts";
 import {
@@ -357,7 +357,7 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
         // tell compact_boundary from stop_hook_summary). Resume gets
         // no compact_divider for V0; live path emits dividers via
         // run-query.ts handling SDKCompactBoundaryMessage directly,
-        // which still has the typed fields. See sidecodeapp/sidecode#13
+        // which still has the typed fields. See thinkite/thinkite#13
         // for the long-term fix (self-built session reader that
         // preserves these fields off the raw JSONL).
       );

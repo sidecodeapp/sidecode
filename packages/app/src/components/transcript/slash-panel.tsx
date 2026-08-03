@@ -1,4 +1,4 @@
-import type { SlashCommandSpec } from "@sidecodeapp/protocol";
+import type { SlashCommandSpec } from "@thinkite/protocol";
 import { GlassView } from "expo-glass-effect";
 import {
   Pressable,

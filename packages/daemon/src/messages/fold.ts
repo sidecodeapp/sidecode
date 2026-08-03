@@ -1,4 +1,4 @@
-import type { EventDelta, TimelineItem } from "@sidecodeapp/protocol";
+import type { EventDelta, TimelineItem } from "@thinkite/protocol";
 
 /**
  * Fold one EventDelta into the in-memory `settled` TimelineItem[] (mutating
@@ -11,7 +11,7 @@ import type { EventDelta, TimelineItem } from "@sidecodeapp/protocol";
  *
  * Compact (`compact_started` / `compact_applied`) is a deliberate no-op:
  * the iOS reducer no-ops it too in V0 (divider + prune deferred to V0.5+,
- * see sidecodeapp/sidecode#13). Mirroring that keeps settled == live. A
+ * see thinkite/thinkite#13). Mirroring that keeps settled == live. A
  * re-read of the compacted JSONL would instead PRUNE settled and diverge
  * from iOS's unpruned live state. When V0.5+ teaches the iOS reducer to
  * prune on `compact_applied` (filter to preservedUuids + append divider),

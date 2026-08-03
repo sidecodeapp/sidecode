@@ -17,7 +17,7 @@ import {
   type SessionState,
   type TimelineItem,
   type TurnUsage,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { base64UrlToBytes } from "./base64";
@@ -197,7 +197,7 @@ export interface SessionStatesCallbacks {
  * signaling open + roster + (daemon mints offer) + ICE gather + DTLS.
  * On a healthy LAN the whole flow completes in <200ms; the slack is
  * for slow ICE gathering on hostile networks (STUN-only today; TURN
- * fallback deferred to sidecodeapp/sidecode#6) and for daemon-side
+ * fallback deferred to thinkite/thinkite#6) and for daemon-side
  * delays admitting an unknown pubkey (pair-window open vs not).
  *
  * If this trips, the UX message blames the most likely cause: the user

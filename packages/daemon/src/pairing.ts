@@ -2,7 +2,7 @@ import {
   encodePairOffer,
   PAIR_OFFER_VERSION,
   type PairOfferFrame,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import type { Identity } from "./identity.ts";
 
 /**

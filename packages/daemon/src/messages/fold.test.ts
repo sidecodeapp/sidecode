@@ -1,4 +1,4 @@
-import type { EventDelta, TimelineItem } from "@sidecodeapp/protocol";
+import type { EventDelta, TimelineItem } from "@thinkite/protocol";
 import { describe, expect, it } from "vitest";
 import { foldEventDelta } from "./fold.ts";
 

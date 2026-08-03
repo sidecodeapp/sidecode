@@ -23,7 +23,7 @@
  * not done here.
  *
  * Run from repo root:
- *   pnpm --filter @sidecodeapp/daemon exec tsx scripts/test-apply-flag-settings.ts
+ *   pnpm --filter @thinkite/daemon exec tsx scripts/test-apply-flag-settings.ts
  */
 
 import {

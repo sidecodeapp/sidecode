@@ -1,4 +1,4 @@
-import type { SessionState } from "@sidecodeapp/protocol";
+import type { SessionState } from "@thinkite/protocol";
 import { createCollection } from "@tanstack/react-db";
 import { daemonRpc } from "./daemon-rpc";
 

@@ -25,7 +25,7 @@ import {
   readActiveDaemonLock,
   resolveSidecodeHome,
   start as startDaemon,
-} from "@sidecodeapp/daemon";
+} from "@thinkite/daemon";
 import {
   app,
   BrowserWindow,

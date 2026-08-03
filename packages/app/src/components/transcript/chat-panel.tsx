@@ -6,7 +6,7 @@ import {
   useKeyboardScrollToEnd,
 } from "@legendapp/list/keyboard";
 import type { LegendListRef } from "@legendapp/list/react-native";
-import type { ImageAttachment } from "@sidecodeapp/protocol";
+import type { ImageAttachment } from "@thinkite/protocol";
 import {
   type Collection,
   eq,

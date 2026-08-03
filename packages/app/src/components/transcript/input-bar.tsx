@@ -4,7 +4,7 @@ import {
   getCommandsForContext,
   type ImageAttachment,
   MODELS,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { ContextMenu, type MenuAction } from "@yyq1025/react-native-nitro-menu";
 import { GlassView } from "expo-glass-effect";

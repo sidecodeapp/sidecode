@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { PROTOCOL_VERSION } from "@sidecodeapp/protocol";
+import { PROTOCOL_VERSION } from "@thinkite/protocol";
 import { resolveSidecodeHome } from "../home.ts";
 import { loadOrCreateIdentity } from "../identity.ts";
 import { start } from "../index.ts";

@@ -1,4 +1,4 @@
-import type { GitStatus } from "@sidecodeapp/protocol";
+import type { GitStatus } from "@thinkite/protocol";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { useDaemonClient } from "@/lib/daemon-client-context";

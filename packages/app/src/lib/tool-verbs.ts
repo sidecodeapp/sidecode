@@ -1,4 +1,4 @@
-import type { ToolCallDetail } from "@sidecodeapp/protocol";
+import type { ToolCallDetail } from "@thinkite/protocol";
 
 /**
  * Past-tense verb for a tool-call row: `<verb> <summary>` where the verb is

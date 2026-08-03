@@ -1,4 +1,4 @@
-import type { TurnUsage } from "@sidecodeapp/protocol";
+import type { TurnUsage } from "@thinkite/protocol";
 
 /**
  * Pure derivation for the context-window meter. Lives in `lib/`

@@ -1,4 +1,4 @@
-import type { TurnUsage } from "@sidecodeapp/protocol";
+import type { TurnUsage } from "@thinkite/protocol";
 import {
   createCollection,
   eq,

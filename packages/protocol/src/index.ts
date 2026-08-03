@@ -671,7 +671,7 @@ export const timelineItem = z.discriminatedUnion("type", [
   // EventDelta. Resume can't emit one — SDK's getSessionMessages strips
   // `subtype` / `compactMetadata` from system messages, so normalize
   // has no way to identify a compact_boundary on disk. Tracked in
-  // sidecodeapp/sidecode#13. Live-only divider is the V0 trade.
+  // thinkite/thinkite#13. Live-only divider is the V0 trade.
   //
   // Renders as a horizontal divider + caption ("Context compacted ·
   // 215k → 18k (manual)"). UI never lets the user mistake it for a

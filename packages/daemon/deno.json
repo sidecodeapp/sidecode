@@ -1,5 +1,5 @@
 {
-  "name": "@sidecodeapp/daemon",
+  "name": "@thinkite/daemon",
   "version": "0.0.1",
   "exports": {
     ".": "./src/index.ts"

@@ -7,7 +7,7 @@ import {
   type SessionState,
   type TimelineItem,
   type TurnUsage,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 
 // WebSocket client for the daemon's /rpc bridge — the local counterpart of
 // iOS's daemon-client.ts, minus everything transport-establishment

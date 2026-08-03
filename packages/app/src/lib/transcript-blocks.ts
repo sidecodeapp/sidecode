@@ -2,7 +2,7 @@ import type {
   ImageAttachment,
   TimelineItem,
   ToolCallDetail,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 
 /**
  * Annotate `TimelineItem[]` with render hints the FlatList rows need:
@@ -58,7 +58,7 @@ export interface ToolRenderBlock {
  * Sourced ONLY from the reducer consuming a live `compact_applied`
  * EventDelta — resume can't produce one (SDK's getSessionMessages
  * strips the system-message subtype + compactMetadata needed to
- * identify boundaries on disk; see sidecodeapp/sidecode#13). Renders
+ * identify boundaries on disk; see thinkite/thinkite#13). Renders
  * as a horizontal line + caption ("Context compacted · 215k → 18k").
  * The actual component lands in the next Slice 2 commit; ChatPanel's
  * renderItem currently renders a placeholder.

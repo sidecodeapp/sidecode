@@ -1,4 +1,4 @@
-import type { TimelineItem, TurnUsage } from "@sidecodeapp/protocol";
+import type { TimelineItem, TurnUsage } from "@thinkite/protocol";
 
 /**
  * Per-session in-memory state for streaming/live messaging. Holds:

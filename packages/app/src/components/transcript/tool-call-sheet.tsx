@@ -1,4 +1,4 @@
-import type { ToolCallDetail } from "@sidecodeapp/protocol";
+import type { ToolCallDetail } from "@thinkite/protocol";
 import { ModalBottomSheet } from "@swmansion/react-native-bottom-sheet";
 import { Asset } from "expo-asset";
 import {

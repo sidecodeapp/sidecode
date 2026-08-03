@@ -1,4 +1,4 @@
-import type { ImageAttachment } from "@sidecodeapp/protocol";
+import type { ImageAttachment } from "@thinkite/protocol";
 import * as Crypto from "expo-crypto";
 import { router, Stack } from "expo-router";
 import { useCallback, useState } from "react";

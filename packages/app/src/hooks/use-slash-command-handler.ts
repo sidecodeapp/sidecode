@@ -5,7 +5,7 @@ import {
   MODELS,
   parseSlashCommand,
   SLASH_COMMANDS,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import * as Burnt from "burnt";
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
@@ -46,9 +46,9 @@ import { updateSessionModel } from "@/lib/sessions-collection";
  *                            chip's sheet programmatically would need a
  *                            new imperative API on InputBar, deferred
  *
- * V0 whitelist defined in `@sidecodeapp/protocol/slash-commands`.
+ * V0 whitelist defined in `@thinkite/protocol/slash-commands`.
  * V0.5+ /fork /rename /rewind: each is intercept-handling, will gain a
- * new switch case here. See sidecodeapp/sidecode#10.
+ * new switch case here. See thinkite/thinkite#10.
  */
 export type SlashCommandHandlerOpts =
   | {

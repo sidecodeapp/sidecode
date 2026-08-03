@@ -1,4 +1,4 @@
-import type { ImageAttachment } from "@sidecodeapp/protocol";
+import type { ImageAttachment } from "@thinkite/protocol";
 import { Directory, File, Paths } from "expo-file-system";
 
 /**

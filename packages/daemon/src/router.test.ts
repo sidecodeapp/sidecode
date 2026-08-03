@@ -12,7 +12,7 @@ import type {
   DaemonFrame,
   EventDelta,
   TimelineItem,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import { describe, expect, it, vi } from "vitest";
 import type { CommandContext } from "./command.ts";
 import { GitWatcherRegistry } from "./git-watch.ts";

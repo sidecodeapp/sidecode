@@ -1,7 +1,7 @@
 import {
   dtlsFingerprintTranscript,
   extractDtlsFingerprint,
-} from "@sidecodeapp/protocol";
+} from "@thinkite/protocol";
 import {
   RTCIceCandidate,
   RTCPeerConnection,

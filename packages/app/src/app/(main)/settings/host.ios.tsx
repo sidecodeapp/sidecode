@@ -9,7 +9,7 @@ import {
   Text,
 } from "@expo/ui/swift-ui";
 import { font, foregroundStyle } from "@expo/ui/swift-ui/modifiers";
-import { PROTOCOL_VERSION } from "@sidecodeapp/protocol";
+import { PROTOCOL_VERSION } from "@thinkite/protocol";
 import { Stack } from "expo-router";
 import type { ReactNode } from "react";
 import { Alert } from "react-native";

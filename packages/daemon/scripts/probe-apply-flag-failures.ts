@@ -17,7 +17,7 @@
  * For each: catch + log. The TS `as never` casts bypass the SDK's
  * type narrowing so we can actually send the bad values on the wire.
  *
- * Run: pnpm --filter @sidecodeapp/daemon exec tsx scripts/probe-apply-flag-failures.ts
+ * Run: pnpm --filter @thinkite/daemon exec tsx scripts/probe-apply-flag-failures.ts
  */
 
 import {
