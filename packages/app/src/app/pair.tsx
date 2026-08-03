@@ -21,7 +21,7 @@ import { useDaemonClient } from "@/lib/daemon-client-context";
  * of where the offer payload came from:
  *
  *   1. **Universal Link** — Camera app scans
- *      `https://sidecode.app/pair?o=<base64url>` and cold-launches us
+ *      `https://thinkite.dev/pair?o=<base64url>` and cold-launches us
  *      straight here. `Stack.Protected` shows `/onboarding` underneath
  *      for an unpaired user, or the drawer underneath for an
  *      already-paired user (see the paired sub-cases below — V0 holds one
@@ -126,12 +126,12 @@ export default function PairModal() {
 
   if (decoded.status === "missing") {
     title = "No pair code";
-    body = "To pair, scan a QR from sidecode on your Mac.";
+    body = "To pair, scan a QR from Thinkite on your Mac.";
     primaryAction = { label: "Close", onPress: handleCancel, disabled: false };
   } else if (decoded.status === "invalid") {
     title = "Invalid pair code";
     body =
-      "This QR isn't a valid sidecode pair code, or it's expired. Get a fresh one from your Mac.";
+      "This QR isn't a valid Thinkite pair code, or it's expired. Get a fresh one from your Mac.";
     primaryAction = { label: "Close", onPress: handleCancel, disabled: false };
   } else if (
     paired?.daemonIdentityPublicKey === decoded.offer.daemonIdentityPublicKey
@@ -149,7 +149,7 @@ export default function PairModal() {
     // line below) and style the confirm destructively (red).
     title = `Replace ${paired.serviceName}?`;
     body =
-      "sidecode pairs with one Mac at a time. Pairing here disconnects the current Mac.";
+      "Thinkite pairs with one Mac at a time. Pairing here disconnects the current Mac.";
     primaryAction = {
       label: busy ? "Pairing…" : "Replace",
       onPress: handleConfirm,

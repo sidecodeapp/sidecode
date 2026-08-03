@@ -41,7 +41,7 @@ export default function SettingsHostScreen() {
   const onForget = () => {
     Alert.alert(
       "Forget this host?",
-      "You'll need to scan the QR from `sidecode pair` again to reconnect.",
+      "You'll need to scan a pair QR from Thinkite on your Mac again to reconnect.",
       [
         { text: "Cancel", style: "cancel" },
         {

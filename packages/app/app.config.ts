@@ -26,17 +26,17 @@ const VARIANTS: Record<string, Variant> = {
   development: {
     idSuffix: ".dev",
     nameSuffix: " (Dev)",
-    scheme: "sidecode-dev",
+    scheme: "thinkite-dev",
   },
   preview: {
     idSuffix: ".preview",
     nameSuffix: " (Preview)",
-    scheme: "sidecode-preview",
+    scheme: "thinkite-preview",
   },
   production: {
     idSuffix: "",
     nameSuffix: "",
-    scheme: "sidecode",
+    scheme: "thinkite",
   },
 };
 

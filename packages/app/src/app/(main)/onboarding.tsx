@@ -125,14 +125,14 @@ export default function OnboardingRoute() {
     // iOS-only, so no Android fallback is needed here.
     Alert.prompt(
       "Paste pair code",
-      "Paste the code shown in sidecode on your Mac.",
+      "Paste the code shown in Thinkite on your Mac.",
       (value) => openPairModal(value ?? ""),
       "plain-text",
     );
   }, [openPairModal]);
 
   const openMacDownload = useCallback(() => {
-    void Linking.openURL("https://sidecode.app/mac");
+    void Linking.openURL("https://thinkite.dev/mac");
   }, []);
 
   return (
@@ -142,7 +142,7 @@ export default function OnboardingRoute() {
         <View className="flex-1 justify-center">
           <SidecodeMark size={64} />
           <Text className="mt-4 text-3xl font-bold text-black dark:text-white">
-            sidecode
+            thinkite
           </Text>
           <Text className="mt-2 text-base text-gray-500 dark:text-gray-400">
             Control Claude Code on Mac from your phone.
@@ -158,7 +158,7 @@ export default function OnboardingRoute() {
         {/* The precondition first-run users miss: a QR only exists once the
             Mac side opens its Pair window. Name the exact menu item. */}
         <Text className="mb-3 text-sm text-gray-500 dark:text-gray-400 text-center">
-          Sidecode Mac menu → Pair new device.
+          Thinkite Mac menu → Pair new device.
         </Text>
 
         {/* CTA bar — the only @expo/ui island. Universal Buttons render the
@@ -217,7 +217,7 @@ export default function OnboardingRoute() {
           <Text className="text-sm text-gray-500 dark:text-gray-400">
             Need the Mac app?{" "}
             <Text className="text-gray-900 underline dark:text-gray-200">
-              sidecode.app/mac
+              thinkite.dev/mac
             </Text>
           </Text>
         </Pressable>

@@ -19,7 +19,7 @@ import { useDaemonClient } from "@/lib/daemon-client-context";
 
 // Website redirect, not a hardcoded App Store id — the site can point at
 // TestFlight today and the store listing later without an app release.
-const IOS_UPDATE_URL = "https://sidecode.app/ios";
+const IOS_UPDATE_URL = "https://thinkite.dev/ios";
 
 /**
  * `/update-required` — protocol-mismatch gate (only reachable while
@@ -100,7 +100,7 @@ export default function UpdateRequiredRoute() {
 
       {side === "daemon" ? (
         <Text className="mb-3 text-sm text-gray-500 dark:text-gray-400 text-center">
-          On your Mac: Sidecode menu → Check for updates.
+          On your Mac: Thinkite menu → Check for updates.
         </Text>
       ) : null}
 

@@ -242,7 +242,7 @@ function Connecting() {
       </Text>
       {showHint ? (
         <Text className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-          Make sure the sidecode daemon is running on your Mac.
+          Make sure the Thinkite daemon is running on your Mac.
         </Text>
       ) : null}
     </SafeAreaView>

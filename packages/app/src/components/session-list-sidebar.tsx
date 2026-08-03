@@ -215,7 +215,7 @@ export function SessionListSidebar() {
         }}
       >
         <Text className="text-2xl font-semibold text-black dark:text-white">
-          sidecode
+          thinkite
         </Text>
         <Host matchContents>
           <Button

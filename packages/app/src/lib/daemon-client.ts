@@ -52,10 +52,10 @@ export class IncompatibleProtocolError extends Error {
         : outdatedSide(daemonProtocolVersion);
     super(
       side === "remote"
-        ? "The Mac app is out of date. Update Sidecode on your Mac, then try again."
+        ? "The Mac app is out of date. Update Thinkite on your Mac, then try again."
         : side === "local"
-          ? "This app is out of date. Update Sidecode from the App Store, then try again."
-          : "Sidecode is out of date. Update both the iPhone app and the Mac app to the latest version, then try again.",
+          ? "This app is out of date. Update Thinkite from the App Store, then try again."
+          : "Thinkite is out of date. Update both the iPhone app and the Mac app to the latest version, then try again.",
     );
     this.name = "IncompatibleProtocolError";
     this.daemonProtocolVersion = daemonProtocolVersion;
@@ -116,7 +116,7 @@ export function decodePairOffer(payload: string): PairOffer {
   const offer = decodePairOfferPayload(payload);
   if (offer.v !== PAIR_OFFER_VERSION) {
     throw new Error(
-      `Pair code is from a different sidecode version (got v=${offer.v}, expected v=${PAIR_OFFER_VERSION}). Update sidecode on your Mac.`,
+      `Pair code is from a different Thinkite version (got v=${offer.v}, expected v=${PAIR_OFFER_VERSION}). Update Thinkite on your Mac.`,
     );
   }
   return offer;

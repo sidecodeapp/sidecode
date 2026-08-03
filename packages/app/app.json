@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Sidecode",
+    "name": "Thinkite",
     "slug": "sidecode",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "sidecode",
+    "scheme": "thinkite",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/sidecode.icon",
@@ -54,14 +54,14 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow sidecode to scan pair QR codes from your Mac."
+          "cameraPermission": "Allow Thinkite to scan pair QR codes from your Mac."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow sidecode to attach photos from your library to messages.",
-          "cameraPermission": "Allow sidecode to take photos to attach to messages."
+          "photosPermission": "Allow Thinkite to attach photos from your library to messages.",
+          "cameraPermission": "Allow Thinkite to take photos to attach to messages."
         }
       ],
       [

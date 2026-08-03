@@ -497,7 +497,7 @@ function GitStatusBarMock({ isDark }: { isDark: boolean }) {
       >
         <View className="flex-row items-center gap-2 px-4 h-10">
           <Text className="text-sm text-zinc-500 dark:text-zinc-400">
-            sidecode
+            thinkite
           </Text>
           <Text className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
             main
