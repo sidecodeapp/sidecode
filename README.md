@@ -1,12 +1,12 @@
-# Sidecode
+# Thinkite
 
 > Spin up and drive Claude Code sessions on your Mac — from your phone, peer-to-peer.
 
 https://github.com/user-attachments/assets/2c0ddbf5-c364-4b09-a652-70e64ad2fbcf
 
 <p align="center">
-  <a href="https://sidecode.app/mac"><img alt="Download for macOS" src="https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge&logo=apple&logoColor=white" /></a>
-  <a href="https://sidecode.app/ios"><img alt="iOS via TestFlight" src="https://img.shields.io/badge/iOS-TestFlight-0D96F6?style=for-the-badge&logo=apple&logoColor=white" /></a>
+  <a href="https://thinkite.dev/mac"><img alt="Download for macOS" src="https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge&logo=apple&logoColor=white" /></a>
+  <a href="https://thinkite.dev/ios"><img alt="iOS via TestFlight" src="https://img.shields.io/badge/iOS-TestFlight-0D96F6?style=for-the-badge&logo=apple&logoColor=white" /></a>
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@ https://github.com/user-attachments/assets/2c0ddbf5-c364-4b09-a652-70e64ad2fbcf
   <img alt="status: early / V0" src="https://img.shields.io/badge/status-V0-orange" />
 </p>
 
-**Sidecode lets you start, stream, and steer Claude Code sessions on your Mac from your phone.**
+**Thinkite lets you start, stream, and steer Claude Code sessions on your Mac from your phone.**
 A lightweight daemon on your Mac orchestrates the sessions; the iOS app connects to it **directly,
 peer-to-peer** over a WebRTC link, so your prompts, responses, and diffs stream straight between
 your own devices — no third-party server can read your session data.
@@ -91,7 +91,7 @@ steps out of the way — application traffic is peer-to-peer.
   setup (SDP/ICE); it is never in the data path. The TURN fallback only ever relays
   already-encrypted bytes.
 - **Your credentials stay on your Mac.** The daemon uses your existing Claude login from the
-  system keychain. Sidecode never reads, stores, or transmits your tokens.
+  system keychain. Thinkite never reads, stores, or transmits your tokens.
 
 ---
 
@@ -105,10 +105,10 @@ steps out of the way — application traffic is peer-to-peer.
 
 **Install**
 
-1. **[Download Sidecode for macOS](https://sidecode.app/mac)** and drag it to Applications.
-2. Launch Sidecode — it lives in your menu bar and starts the daemon automatically.
-3. **[Get the iOS app](https://sidecode.app/ios)** (TestFlight).
-4. In the menu bar, open **Pair** and scan the QR with the app.
+1. **[Download Thinkite for macOS](https://thinkite.dev/mac)** and drag it to Applications.
+2. Launch Thinkite — the daemon starts automatically, and the app stays resident in your tray.
+3. **[Get the iOS app](https://thinkite.dev/ios)** (TestFlight).
+4. From the tray menu, choose **Pair new device** and scan the QR with the app.
 5. Create a session (pick a project folder) and start prompting.
 
 ---
@@ -121,7 +121,7 @@ This is a bun monorepo:
 |---|---|
 | `packages/app` | iOS client — Expo / React Native |
 | `packages/daemon` | macOS daemon — wraps the Claude Agent SDK, WebRTC peer, session orchestration, cloud bridge |
-| `packages/desktop` | macOS desktop GUI — Electrobun (bun + WKWebView), tray, terminal, pairing |
+| `packages/desktop` | macOS desktop GUI — Electron + Vite + React, tray, terminal, pairing |
 | `packages/protocol` | Shared wire protocol — zod schemas, version negotiation, chunking |
 | `packages/signaling` | Cloudflare Worker + Durable Object signaling server |
 | `packages/website` | Landing page (Astro) |
@@ -159,7 +159,7 @@ Claude Agent SDK · Electron · zod
 
 ## Status
 
-Sidecode is an early (V0) project under active development. Core flows — pairing, starting and
+Thinkite is an early (V0) project under active development. Core flows — pairing, starting and
 streaming P2P sessions, optional cloud bridging, tool diffs, and mid-response reconnect — work
 today on macOS (Apple Silicon) and iOS. Expect rough edges; interfaces may change.
 
@@ -168,7 +168,7 @@ today on macOS (Apple Silicon) and iOS. Expect rough edges; interfaces may chang
 ## FAQ
 
 **Does this use my Claude plan?**
-Yes. Sidecode runs Claude Code locally with your existing Claude login; usage counts against
+Yes. Thinkite runs Claude Code locally with your existing Claude login; usage counts against
 your Claude plan exactly as if you ran Claude Code yourself.
 
 **Do I need Claude Desktop?**
@@ -189,5 +189,5 @@ The daemon currently targets macOS (Apple Silicon). The mobile client is iOS.
 
 Diff and code rendering is powered by [`@pierre/diffs`](https://diffs.com) and [Shiki](https://shiki.style).
 
-> **Disclaimer:** Sidecode is an independent, open-source project. It is not affiliated with,
+> **Disclaimer:** Thinkite is an independent, open-source project. It is not affiliated with,
 > endorsed by, or sponsored by Anthropic. "Claude" and "Claude Code" are trademarks of Anthropic.
