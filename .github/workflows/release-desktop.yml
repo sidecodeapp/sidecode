@@ -1,16 +1,20 @@
-name: Release menubar
+name: Release desktop
 
-# Tag-driven release of the Mac menu bar app, draft-first:
+# Tag-driven release of the Thinkite desktop app, draft-first:
 #
 #   git tag v0.0.2 && git push origin v0.0.2
-#     → this workflow builds, signs, notarizes, and uploads
-#       dmg + zip + blockmap + latest-mac.yml to a DRAFT GitHub release
+#     → builds, signs, notarizes, and uploads dmg + zip + blockmaps +
+#       latest-mac.yml to a DRAFT GitHub release
 #     → smoke-test the draft's dmg locally, then click "Publish release"
 #
 # electron-updater only sees PUBLISHED releases, so the draft is the safety
-# gate: installed apps' periodic checks (electron/updater.ts, 6h) start
-# picking the version up only at the moment of manual publish. A bad build
-# never reaches users — delete the draft and re-tag.
+# gate: installed apps' periodic checks (server/updater.ts) start picking
+# the version up only at the moment of manual publish. A bad build never
+# reaches users — delete the draft and re-tag.
+#
+# `workflow_dispatch` is the no-release path: same build + sign + notarize,
+# but artifacts land on the workflow run (Actions → run → Artifacts) instead
+# of a release — for grabbing an installer to inspect without cutting a tag.
 #
 # Required repo secrets (Settings → Secrets and variables → Actions):
 #   CSC_LINK           base64 of the Developer ID Application .p12 export
@@ -20,11 +24,12 @@ name: Release menubar
 #   APPLE_API_ISSUER   the ASC issuer UUID
 # (electron-builder imports the cert into a temp keychain via CSC_LINK and
 # notarizes via notarytool with the API key — same env contract as the local
-# `package:mac:notarize` script's .env.local.)
+# `package:notarize` script's .env.local.)
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write # create the draft release + upload assets
@@ -37,42 +42,51 @@ jobs:
         with:
           fetch-depth: 0 # full history + tags for the commit-log release notes
 
-      - uses: pnpm/action-setup@v4 # version from root package.json `packageManager`
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json # root `packageManager`
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4 # vitest + tsc run on node (shebang-honored)
         with:
           node-version: 24
-          cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+      - run: bun install --frozen-lockfile
 
       # The feed (latest-mac.yml) advertises the package.json version; if the
       # tag disagrees, installed apps would update to something other than
-      # what the tag claims. Fail fast instead.
-      - name: Assert tag matches menubar package version
+      # what the tag claims. Fail fast instead. (Dispatch runs skip this —
+      # no tag to be truthful to.)
+      - name: Assert tag matches desktop package version
+        if: github.ref_type == 'tag'
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
-          PKG_VERSION=$(node -p "require('./packages/menubar/package.json').version")
+          PKG_VERSION=$(node -p "require('./packages/desktop/package.json').version")
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-            echo "::error::tag $GITHUB_REF_NAME but packages/menubar/package.json is $PKG_VERSION — bump the package version (or re-tag) so the update feed stays truthful"
+            echo "::error::tag $GITHUB_REF_NAME but packages/desktop/package.json is $PKG_VERSION — bump the package version (or re-tag) so the update feed stays truthful"
             exit 1
           fi
 
+      # Same gate as ci.yml minus the app (iOS) leg — desktop releases
+      # shouldn't be blocked by the phone app's separately-pinned toolchain.
       - name: Typecheck + tests
         run: |
-          pnpm --filter @sidecodeapp/signaling run cf-typegen # gitignored workerd types
-          pnpm -r typecheck
-          pnpm test
+          bun run --cwd packages/signaling cf-typegen # gitignored workerd types
+          bun run --cwd packages/protocol typecheck
+          bun run --cwd packages/daemon typecheck
+          bun run --cwd packages/desktop typecheck
+          bun run --cwd packages/signaling typecheck
+          bun run test
 
       # Pre-create the draft release BEFORE electron-builder runs. Its GitHub
       # publisher spins up one instance per artifact; when no draft exists yet
-      # they race to create one and the v0.0.2 run ended with TWO drafts and
-      # the assets split between them. A pre-existing draft (matching tag +
+      # they race to create one and a past run ended with TWO drafts and the
+      # assets split between them. A pre-existing draft (matching tag +
       # version-named title) is found by every instance — no race. The body is
       # the commit log since the previous tag (direct-to-main workflow means
       # GitHub's PR-based auto-notes would be empty); hand-write a short
       # user-facing What's New above it before publishing.
       - name: Create draft release with commit-log notes
+        if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -95,7 +109,7 @@ jobs:
           echo "$APPLE_API_KEY_P8" | base64 --decode > "$RUNNER_TEMP/asc-api-key.p8"
           echo "APPLE_API_KEY=$RUNNER_TEMP/asc-api-key.p8" >> "$GITHUB_ENV"
 
-      - name: Build, sign, notarize, upload to draft release
+      - name: Build, sign, notarize
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -104,7 +118,24 @@ jobs:
           # electron-builder.cjs's `notarize` gate on.
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          # Tag run → upload to the pre-created draft; dispatch run → build
+          # only, artifacts collected by the upload step below.
+          PUBLISH_FLAG: ${{ github.ref_type == 'tag' && 'always' || 'never' }}
+        working-directory: packages/desktop
         run: |
-          pnpm --filter '@sidecodeapp/menubar...' run build
-          pnpm --filter @sidecodeapp/menubar exec electron-builder --mac --arm64 --publish always
+          bun run --cwd ../protocol build
+          bun run --cwd ../daemon build
+          bunx vite build
+          bunx electron-builder --mac --arm64 --publish "$PUBLISH_FLAG"
 
+      - name: Upload installer as workflow artifact (dispatch only)
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Thinkite-mac-arm64
+          path: |
+            packages/desktop/release/*.dmg
+            packages/desktop/release/*.zip
+            packages/desktop/release/*.blockmap
+            packages/desktop/release/latest-mac.yml
+          if-no-files-found: error
