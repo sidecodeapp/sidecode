@@ -13,12 +13,19 @@
   //
   // Free-tier requires SQLite-backed DO (`new_sqlite_classes` below);
   // KV-backed DO would require a paid Workers plan.
-  "name": "sidecode-signaling",
+  "name": "thinkite-signaling",
   "main": "src/index.ts",
   "compatibility_date": "2026-05-21",
-  // Set route after first deploy. Skipped here so `wrangler dev` works
-  // out of the box without a custom-domain binding.
-  // "routes": [{ "pattern": "signaling.sidecode.app", "custom_domain": true }],
+  // Dual custom domains during the sidecode → thinkite rename: installed
+  // clients still hardcode signaling.sidecode.app; new builds will use
+  // signaling.thinkite.dev. Same worker + same DO namespace, so rooms
+  // (keyed by daemon pubkey) meet regardless of which hostname a peer
+  // dialed. Drop the sidecode.app entry once the installed fleet is on
+  // thinkite builds.
+  "routes": [
+    { "pattern": "signaling.sidecode.app", "custom_domain": true },
+    { "pattern": "signaling.thinkite.dev", "custom_domain": true }
+  ],
   "observability": {
     "enabled": true
   },
