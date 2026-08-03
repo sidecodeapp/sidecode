@@ -7,14 +7,16 @@
 // literal re-export), so the mixed tree is native-identical.
 import { Column, Host, Icon, Text as UIText } from "@expo/ui";
 import { Button } from "@expo/ui/swift-ui";
-import {
-  buttonStyle,
-  controlSize,
-  frame,
-  tint,
-} from "@expo/ui/swift-ui/modifiers";
+import { buttonStyle, controlSize, frame } from "@expo/ui/swift-ui/modifiers";
 import { useCallback } from "react";
-import { Alert, Linking, Pressable, Text, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  PlatformColor,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 import { useDaemonClient } from "@/lib/daemon-client-context";
 
 // Website redirect, not a hardcoded App Store id — the site can point at
@@ -77,7 +79,11 @@ export default function UpdateRequiredRoute() {
     <View className="flex-1 bg-white dark:bg-black px-6 pb-safe-offset-4 pt-safe">
       <View className="flex-1 justify-center">
         <Host matchContents style={{ alignSelf: "flex-start" }}>
-          <Icon name="arrow.up.circle" size={56} color="#EE5722" />
+          <Icon
+            name="arrow.up.circle"
+            size={56}
+            color={PlatformColor("systemBlue")}
+          />
         </Host>
         <Text className="mt-4 text-3xl font-bold text-black dark:text-white">
           Update Required
@@ -116,7 +122,6 @@ export default function UpdateRequiredRoute() {
               modifiers={[
                 buttonStyle("glassProminent"),
                 controlSize("extraLarge"),
-                tint("#EE5722"),
               ]}
             >
               <UIText
@@ -138,7 +143,6 @@ export default function UpdateRequiredRoute() {
             modifiers={[
               buttonStyle(side === "app" ? "bordered" : "glassProminent"),
               controlSize("extraLarge"),
-              tint("#EE5722"),
             ]}
           >
             <UIText

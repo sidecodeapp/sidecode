@@ -13,6 +13,7 @@ import {
 } from "@expo/ui/swift-ui/modifiers";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
+import { PlatformColor } from "react-native";
 import { decodePairOffer, type PairOffer } from "@/lib/daemon-client";
 import { useDaemonClient } from "@/lib/daemon-client-context";
 
@@ -118,8 +119,8 @@ export default function PairModal() {
     label: string;
     onPress: () => void;
     disabled: boolean;
-    // Override the default orange CTA tint — red for the destructive
-    // "Replace" confirm. Defaults to "#EE5722" in the render below.
+    // Override the system-blue CTA tint — red for the destructive
+    // "Replace" confirm. Omitted = SwiftUI's default (systemBlue).
     tint?: string;
   };
   let secondary: { label: string; onPress: () => void } | null = null;
@@ -196,7 +197,11 @@ export default function PairModal() {
         style={{ paddingHorizontal: 20 }}
       >
         <Column alignment="start" spacing={12}>
-          <Icon name="laptopcomputer.and.iphone" size={56} color="#EE5722" />
+          <Icon
+            name="laptopcomputer.and.iphone"
+            size={56}
+            color={PlatformColor("systemBlue")}
+          />
           <Column alignment="start" spacing={6}>
             <Text textStyle={{ fontSize: 22, fontWeight: "600" }}>{title}</Text>
             {serviceName && (
@@ -221,7 +226,7 @@ export default function PairModal() {
             modifiers={[
               buttonStyle("glassProminent"),
               controlSize("extraLarge"),
-              tint(primaryAction.tint ?? "#EE5722"),
+              ...(primaryAction.tint ? [tint(primaryAction.tint)] : []),
               disabled(primaryAction.disabled === true),
             ]}
           >
@@ -242,7 +247,6 @@ export default function PairModal() {
               modifiers={[
                 buttonStyle("bordered"),
                 controlSize("extraLarge"),
-                tint("#EE5722"),
                 disabled(busy),
               ]}
             >

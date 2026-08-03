@@ -6,12 +6,7 @@
 // stay universal — thin swift-ui wrappers, same native tree.
 import { Column, Host, Text as UIText } from "@expo/ui";
 import { Button } from "@expo/ui/swift-ui";
-import {
-  buttonStyle,
-  controlSize,
-  frame,
-  tint,
-} from "@expo/ui/swift-ui/modifiers";
+import { buttonStyle, controlSize, frame } from "@expo/ui/swift-ui/modifiers";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { router, Stack } from "expo-router";
 import { useCallback, useRef, useState } from "react";
@@ -175,7 +170,6 @@ export default function OnboardingRoute() {
               modifiers={[
                 buttonStyle("glassProminent"),
                 controlSize("extraLarge"),
-                tint("#EE5722"),
               ]}
             >
               <UIText
@@ -190,11 +184,7 @@ export default function OnboardingRoute() {
             </Button>
             <Button
               onPress={handlePaste}
-              modifiers={[
-                buttonStyle("bordered"),
-                controlSize("extraLarge"),
-                tint("#EE5722"),
-              ]}
+              modifiers={[buttonStyle("bordered"), controlSize("extraLarge")]}
             >
               <UIText
                 textStyle={{

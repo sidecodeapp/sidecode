@@ -5,7 +5,6 @@ import {
   controlSize,
   font,
   labelStyle,
-  tint,
 } from "@expo/ui/swift-ui/modifiers";
 import { router, useGlobalSearchParams } from "expo-router";
 import { useMemo } from "react";
@@ -246,7 +245,6 @@ export function SessionListSidebar() {
               buttonStyle("glassProminent"),
               controlSize("large"),
               font({ size: 16, weight: "semibold" }),
-              tint("#EE5722"),
             ]}
             onPress={handleNewSession}
           />
