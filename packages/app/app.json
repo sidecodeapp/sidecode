@@ -10,7 +10,7 @@
     "ios": {
       "icon": "./assets/sidecode.icon",
       "bundleIdentifier": "app.sidecode",
-      "associatedDomains": ["applinks:sidecode.app"],
+      "associatedDomains": ["applinks:sidecode.app", "applinks:thinkite.dev"],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
