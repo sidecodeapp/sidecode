@@ -4,7 +4,7 @@ import { links, site } from "../config";
 interface Props {
   /** When true, renders only the bottom meta row (copyright + links).
       Use on content pages like /privacy that don't need the giant
-      "sidecode." sign-off and download CTAs. */
+      "thinkite." sign-off and download CTAs. */
   minimal?: boolean;
 }
 
@@ -21,7 +21,7 @@ const currentYear = new Date().getFullYear();
       !minimal && (
         <>
           <h2 class="foot-huge">
-            sidecode<span class="ital">.</span>
+            thinkite<span class="ital">.</span>
           </h2>
 
           <div class="foot-actions">
@@ -43,7 +43,7 @@ const currentYear = new Date().getFullYear();
 
           <p class="foot-disclaimer">
             Not affiliated with, or endorsed by, Anthropic. “Claude” and “Claude
-            Code” are trademarks of Anthropic, PBC. sidecode is early,
+            Code” are trademarks of Anthropic, PBC. thinkite is early,
             open-source software — expect rough edges.
           </p>
         </>

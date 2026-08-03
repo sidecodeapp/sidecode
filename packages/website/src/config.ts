@@ -14,12 +14,12 @@ export const links = {
   // macOS app — the /mac route (Worker) resolves the latest .dmg from the
   // GitHub Releases API and 302s to it; never hard-code a versioned URL here.
   download: "/mac",
-  contactEmail: "contact@sidecode.app",
+  contactEmail: "contact@thinkite.dev",
 } as const;
 
 export const site = {
-  url: "https://sidecode.app",
-  name: "sidecode",
+  url: "https://thinkite.dev",
+  name: "thinkite",
   author: "Richard Yang",
   license: "Apache 2.0",
 } as const;

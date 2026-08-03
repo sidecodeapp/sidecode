@@ -607,7 +607,7 @@ html:not([data-platform]) [data-show-on~="desktop"] {
   color: var(--ink);
 }
 .foot-huge .ital {
-  /* Footer "sidecode." period uses Geist (geometric square dot) — not serif italic.
+  /* Footer "thinkite." period uses Geist (geometric square dot) — not serif italic.
      Only the hero h1 "Claude." keeps the Instrument Serif italic flourish. */
   font-family: var(--font-display);
   font-weight: 600;

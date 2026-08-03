@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker for the Sidecode website.
+ * Cloudflare Worker for the Thinkite website.
  *
  * Resolves `/mac` to the latest macOS `.dmg` via the GitHub Releases API, so the
  * download link always points at the current release without hard-coding a
@@ -29,7 +29,7 @@ async function latestMacDmg(): Promise<string | null> {
     headers: {
       Accept: "application/vnd.github+json",
       // GitHub requires a User-Agent on API requests.
-      "User-Agent": "sidecode-website",
+      "User-Agent": "thinkite-website",
     },
     // Edge-cache the API response (5 min) so we stay well under GitHub's
     // 60-req/hr unauthenticated limit even under traffic.
