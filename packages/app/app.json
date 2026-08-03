@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/sidecode.icon",
-      "bundleIdentifier": "app.sidecode",
+      "bundleIdentifier": "dev.thinkite.ios",
       "associatedDomains": ["applinks:sidecode.app", "applinks:thinkite.dev"],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -24,7 +24,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "app.sidecode",
+      "package": "dev.thinkite.android",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",

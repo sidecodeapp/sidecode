@@ -36,8 +36,8 @@
     "production": {
       "ios": {
         "appleTeamId": "KX4PZHC9R3",
-        "bundleIdentifier": "app.sidecode",
-        "ascAppId": "6777824360"
+        "bundleIdentifier": "dev.thinkite.ios",
+        "ascAppId": "6797593457"
       }
     }
   }

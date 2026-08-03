@@ -11,10 +11,11 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 // It defaults to "development" so a plain local `expo run:ios` / `expo start`
 // (no profile, no env) gets the `.dev` id and never collides with TestFlight.
 //
-// production keeps the canonical `app.sidecode` (matches the App Store Connect
-// record + the AASA at sidecode.app). dev/preview get suffixed ids, so Universal
-// Links (https://sidecode.app/...) won't deep-link into them unless those ids
-// are added to the AASA appIDs — QR pairing still works on every variant.
+// production keeps the canonical `dev.thinkite.ios` (matches the App Store
+// Connect record + the AASA appIDs served on thinkite.dev/sidecode.app).
+// dev/preview get suffixed ids, so Universal Links won't deep-link into them
+// unless those ids are added to the AASA appIDs — QR pairing still works on
+// every variant.
 interface Variant {
   idSuffix: string;
   nameSuffix: string;

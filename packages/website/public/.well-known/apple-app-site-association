@@ -2,7 +2,7 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["KX4PZHC9R3.app.sidecode"],
+        "appIDs": ["KX4PZHC9R3.dev.thinkite.ios", "KX4PZHC9R3.app.sidecode"],
         "components": [
           {
             "/": "/pair"
