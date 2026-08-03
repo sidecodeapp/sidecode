@@ -454,7 +454,7 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   process.on("exit", () => deleteDaemonLock(home));
 
   console.log(
-    `sidecode daemon (protocol ${PROTOCOL_VERSION}) connecting to signaling.sidecode.app`,
+    `thinkite daemon (protocol ${PROTOCOL_VERSION}) connecting to signaling.thinkite.dev`,
   );
   console.log(`fingerprint: ${identity.fingerprint}`);
   console.log(`paired clients: ${knownClients.list().length}`);

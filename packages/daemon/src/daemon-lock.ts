@@ -13,7 +13,7 @@ import { join } from "node:path";
  * refuse to spawn a competing one.
  *
  * Post-WebRTC pivot, host/port are gone — the daemon doesn't bind a
- * local port; all transport goes through signaling.sidecode.app + WebRTC.
+ * local port; all transport goes through signaling.thinkite.dev + WebRTC.
  * The lock is now just a liveness record (PID + startedAt).
  *
  * The lock is best-effort: written on start, deleted on graceful stop.

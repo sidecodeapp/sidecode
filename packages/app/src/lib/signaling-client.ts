@@ -74,7 +74,7 @@ export interface SignalingClientOptions extends SignalingClientCallbacks {
   signalingScheme?: "ws" | "wss";
 }
 
-const DEFAULT_HOST = "signaling.sidecode.app";
+const DEFAULT_HOST = "signaling.thinkite.dev";
 const INITIAL_BACKOFF_MS = 1_000;
 const MAX_BACKOFF_MS = 30_000;
 const BACKOFF_MULTIPLIER = 2;

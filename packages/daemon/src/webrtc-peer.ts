@@ -67,7 +67,7 @@ import type { KnownClients } from "./known-clients.ts";
  * via its `createPairOffer` cadence; tests pre-pair via `knownClients.add()`.
  */
 
-const DEFAULT_SIGNALING_HOST = "signaling.sidecode.app";
+const DEFAULT_SIGNALING_HOST = "signaling.thinkite.dev";
 const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:stun.cloudflare.com:3478" },
 ];
@@ -299,7 +299,7 @@ export class WebRTCPeerServer {
     void this.getIceServers();
 
     // Fire-and-forget. Daemon shouldn't refuse to start just because
-    // signaling.sidecode.app is momentarily unreachable — PartySocket's
+    // signaling.thinkite.dev is momentarily unreachable — PartySocket's
     // infinite retry will eventually connect when the network heals, and
     // until then pair attempts time out client-side. The previous
     // synchronous await-for-peers was a debugging-era affordance; in
