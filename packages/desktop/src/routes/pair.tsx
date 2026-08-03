@@ -15,7 +15,7 @@ import { DRAG_REGION, isDesktopShell } from "../lib/desktop-shell";
 // its own BrowserWindow (the menubar PairView, carried over).
 //
 // Mints the offer via GET /api/pair/offer and encodes it into the Universal
-// Link form `https://sidecode.app/pair?o=<base64url>` so pointing the
+// Link form `https://thinkite.dev/pair?o=<base64url>` so pointing the
 // iPhone's built-in Camera at the QR opens the iOS app directly at its
 // `/pair` modal route. The offer is pure (same daemon → same payload), so we
 // mint once on mount — no refresh. The admission gate is driven by this
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/pair")({
   component: PairPage,
 });
 
-const UNIVERSAL_LINK_BASE = "https://sidecode.app/pair";
+const UNIVERSAL_LINK_BASE = "https://thinkite.dev/pair";
 const QR_SIZE = 320;
 const LOGO_SIZE = 72;
 

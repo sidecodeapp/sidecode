@@ -82,7 +82,7 @@ export function SessionSidebar() {
   return (
     <SideNav
       resizable={{ autoSaveId: "sidecode:sidebar-width" }}
-      header={<SideNavHeading heading="sidecode" />}
+      header={<SideNavHeading heading="thinkite" />}
       topContent={
         <div className="flex flex-col gap-2">
           <Button

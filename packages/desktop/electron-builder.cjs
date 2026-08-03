@@ -12,8 +12,8 @@ const notarize = Boolean(process.env.APPLE_API_KEY);
 
 /** @type {import("electron-builder").Configuration} */
 module.exports = {
-  appId: "app.sidecode.desktop",
-  productName: "Sidecode",
+  appId: "dev.thinkite.desktop",
+  productName: "Thinkite",
   // devDep range is ^x — electron-builder needs the exact release to fetch
   // matching platform binaries; read it off the installed package so it can
   // never drift from node_modules.

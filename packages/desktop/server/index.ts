@@ -349,7 +349,7 @@ function openMain(): void {
     return;
   }
   mainWin = new BrowserWindow({
-    title: "Sidecode",
+    title: "Thinkite",
     x: 160,
     y: 120,
     width: 1200,
@@ -529,7 +529,7 @@ function buildMenu(): Electron.Menu {
     ...planUsageItems(),
     { type: "separator" },
     {
-      label: "Open Sidecode",
+      label: "Open Thinkite",
       icon: symbolIcon("macwindow"),
       click: () => openMain(),
     },
@@ -576,7 +576,7 @@ function buildMenu(): Electron.Menu {
 
   items.push(
     {
-      label: "About Sidecode",
+      label: "About Thinkite",
       icon: symbolIcon("info.circle"),
       submenu: [
         { label: `Version ${app.getVersion()}`, enabled: false },
@@ -597,7 +597,7 @@ function buildMenu(): Electron.Menu {
     },
     { type: "separator" },
     {
-      label: "Quit Sidecode",
+      label: "Quit Thinkite",
       accelerator: "CommandOrControl+Q",
       click: () => app.quit(),
     },

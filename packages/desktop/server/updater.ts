@@ -66,7 +66,7 @@ export function initUpdater(opts: { onStateChange: () => void }): void {
     if (consumeInteractive()) {
       showDialog({
         message: "You're up to date",
-        detail: `Sidecode ${app.getVersion()} is the latest version.`,
+        detail: `Thinkite ${app.getVersion()} is the latest version.`,
       });
     }
   });
@@ -88,7 +88,7 @@ export function initUpdater(opts: { onStateChange: () => void }): void {
       void dialog
         .showMessageBox({
           type: "info",
-          message: `Sidecode ${info.version} is ready`,
+          message: `Thinkite ${info.version} is ready`,
           detail: "Restart now to finish updating?",
           buttons: ["Restart Now", "Later"],
           defaultId: 0,

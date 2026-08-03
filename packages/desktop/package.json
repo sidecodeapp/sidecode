@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "license": "Apache-2.0",
-  "description": "Sidecode desktop GUI \u2014 Electrobun (bun + WKWebView) + Vite + React 19 + Astryx",
-  "author": "sidecode",
+  "description": "Thinkite desktop GUI \u2014 Electron + Vite + React 19 + Astryx",
+  "author": "thinkite",
   "type": "module",
   "os": [
     "darwin"
