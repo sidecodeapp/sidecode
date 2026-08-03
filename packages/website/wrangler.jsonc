@@ -1,5 +1,5 @@
 {
-  "name": "sidecode-website",
+  "name": "thinkite-website",
   "compatibility_date": "2026-05-18",
   "main": "./src/worker.ts",
   "assets": {
