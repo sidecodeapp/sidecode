@@ -8,7 +8,7 @@
     "scheme": "thinkite",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/sidecode.icon",
+      "icon": "./assets/thinkite.icon",
       "bundleIdentifier": "dev.thinkite.ios",
       "associatedDomains": ["applinks:sidecode.app", "applinks:thinkite.dev"],
       "infoPlist": {
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#CFE6F5",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -45,7 +45,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#111110",
+          "backgroundColor": "#CFE6F5",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 128
         }

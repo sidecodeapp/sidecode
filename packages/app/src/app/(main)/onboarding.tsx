@@ -16,7 +16,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { router, Stack } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { Alert, Linking, Pressable, Text, View } from "react-native";
-import { SidecodeMark } from "@/components/sidecode-mark";
+import { ThinkiteMark } from "@/components/thinkite-mark";
 
 /**
  * `/onboarding` — first-launch / re-pair gate (only reachable while
@@ -140,7 +140,7 @@ export default function OnboardingRoute() {
       <Stack.Screen options={{ headerShown: false }} />
       <View className="flex-1 bg-white dark:bg-black px-6 pb-safe-offset-4 pt-safe">
         <View className="flex-1 justify-center">
-          <SidecodeMark size={64} />
+          <ThinkiteMark size={64} />
           <Text className="mt-4 text-3xl font-bold text-black dark:text-white">
             thinkite
           </Text>

@@ -8,7 +8,7 @@ import { VStack } from "@astryxdesign/core/VStack";
 import { createFileRoute } from "@tanstack/react-router";
 import { toDataURL } from "qrcode";
 import { useCallback, useEffect, useState } from "react";
-import sidecodeLogo from "../assets/sidecode-logo.svg";
+import thinkiteLogo from "../assets/thinkite-logo.svg";
 import { DRAG_REGION, isDesktopShell } from "../lib/desktop-shell";
 
 // Pairing window content — loaded by the tray's "Pair New Device…" item in
@@ -101,7 +101,7 @@ function PairPage() {
                 height={QR_SIZE}
               />
               <img
-                src={sidecodeLogo}
+                src={thinkiteLogo}
                 alt=""
                 width={LOGO_SIZE}
                 height={LOGO_SIZE}

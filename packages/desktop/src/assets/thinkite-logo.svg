@@ -1,0 +1,12 @@
+<svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="tile"><rect width="360" height="360" rx="80"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="360" height="360" fill="#CFE6F5"/>
+    <polygon points="57.6,309.6 151.2,0 250.09,112.54" fill="#EE8A57"/>
+    <polygon points="151.2,0 360,0 250.09,112.54" fill="#F6C67D"/>
+    <polygon points="360,0 360,237.6 250.09,112.54" fill="#DB6480"/>
+    <polygon points="57.6,309.6 250.09,112.54 360,237.6" fill="#7A63AC"/>
+  </g>
+</svg>
