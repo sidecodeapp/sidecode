@@ -45,16 +45,21 @@ module.exports = {
     "package.json",
     "!**/node_modules/@anthropic-ai/claude-agent-sdk-*/**",
   ],
-  asar: true,
-  // Native code can't load from inside the asar archive:
+  // Native code can't load from inside the asar archive (v27: `asarUnpack`
+  // moved into `asar.unpack`):
   //  - node-datachannel ships a prebuilt .node (must be dlopen-able)
   //  - @lydell/node-pty ditto (DESKTOP inversion #2 — menubar had no PTY)
-  asarUnpack: [
-    "**/node_modules/node-datachannel/**",
-    "**/node_modules/@lydell/node-pty/**",
-  ],
-  // Prebuilt N-API modules; don't rebuild native modules against Electron.
-  npmRebuild: false,
+  asar: {
+    unpack: [
+      "**/node_modules/node-datachannel/**",
+      "**/node_modules/@lydell/node-pty/**",
+    ],
+  },
+  // Prebuilt N-API modules; don't rebuild native modules against Electron
+  // (v27: `npmRebuild` moved into `nativeModules`).
+  nativeModules: {
+    npmRebuild: false,
+  },
   // Chromium UI locale packs: en only (−47MB installed). Engine-generated
   // strings (form-validation bubbles etc.) become English; text RENDERING is
   // unaffected (icudtl.dat + system fonts stay). Renderer content is ours.
@@ -67,20 +72,25 @@ module.exports = {
     ],
     // biome-ignore lint/suspicious/noTemplateCurlyInString: electron-builder's own placeholder syntax, not a JS template
     artifactName: "${productName}-${version}-${arch}.${ext}",
-    hardenedRuntime: true,
-    gatekeeperAssess: false,
-    entitlements: "build/entitlements.mac.plist",
-    entitlementsInherit: "build/entitlements.mac.plist",
+    // v27 consolidates all signing options under `sign` (mirrors win.sign);
+    // gatekeeperAssess is removed entirely in v27 (notarytool era).
+    sign: {
+      hardenedRuntime: true,
+      entitlements: "build/entitlements.mac.plist",
+      entitlementsInherit: "build/entitlements.mac.plist",
+    },
     // DESKTOP inversion #3: no LSUIElement — this is a real windowed app
     // with a Dock icon; tray residency comes from window-all-closed no-op,
     // not from agent-app status.
     notarize,
   },
-  // DESKTOP addition #4: lzfse DMG — smaller AND faster to mount than the
-  // UDZO default (measured: 124→113MB, 5.3s→4.3s install). Switch to ULMO
-  // (82MB) once electron-builder#10018 lands the enum.
+  // DESKTOP addition #4: lzma DMG (our upstream PR electron-builder#10018,
+  // landed in 27.0.0-alpha.6) — smallest hdiutil format, macOS 10.15+ only
+  // (Electron 43 needs macOS 11+ anyway). Prior ladder: UDZO 124MB/5.3s →
+  // ULFO 113MB/4.3s. v27 also flips the volume filesystem default HFS+ →
+  // APFS (mount on 10.13+, again subsumed by Electron's floor).
   dmg: {
-    format: "ULFO",
+    format: "ULMO",
   },
   // electron-updater feed. The packaged app's embedded app-update.yml bakes in
   // whatever is set at BUILD time:
