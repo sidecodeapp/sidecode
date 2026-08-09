@@ -1,19 +1,11 @@
-import * as ed25519 from "@noble/ed25519";
 import { sha256 } from "@noble/hashes/sha2.js";
 import {
-  type ChunkEnvelope,
-  ChunkReassembler,
-  chunkMessage,
   type DirectoryEntry,
   decodePairOfferPayload,
   type EventDelta,
   type GitStatus,
   type ImageAttachment,
-  isChunkEnvelope,
-  isProtocolCompatible,
-  outdatedSide,
   PAIR_OFFER_VERSION,
-  PROTOCOL_VERSION,
   type SessionState,
   type TimelineItem,
   type TurnUsage,
@@ -22,47 +14,13 @@ import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { base64UrlToBytes } from "./base64";
 import type { ClientIdentity } from "./identity";
-import { SignalingClient, type SignalingPeer } from "./signaling-client";
-import { WebRTCPeer } from "./webrtc-peer";
+import { connectWebRTCWire } from "./webrtc-wire";
+import { helloHandshake, type WireTransport } from "./wire-transport";
 
-/**
- * Thrown by the connect handshake when the daemon and app speak
- * wire-incompatible protocol versions. The daemon's rejection frame (and
- * `server_info`) carry its PROTOCOL_VERSION, so `outdatedSide` names the
- * side that needs updating — the semver-lower side — and the message is
- * tailored to it. `"unknown"` (→ direction-neutral "update both" copy)
- * only happens when the version is missing or unparseable, e.g. the
- * frame-before-hello misuse rejection which deliberately omits it.
- *
- * Unlike a transient unreachable-daemon failure, this is TERMINAL: no
- * amount of retrying changes the version check. `DaemonClientProvider`
- * routes it to a terminal `error` state and stops the auto-reconnect loop
- * (the user re-attempts via `reset()` after updating).
- */
-export class IncompatibleProtocolError extends Error {
-  readonly appProtocolVersion = PROTOCOL_VERSION;
-  readonly daemonProtocolVersion: string | null;
-  /** Which side is too old. `"daemon"` → update the Mac app, `"app"` →
-   *  update this app, `"unknown"` → no usable daemon version, update both. */
-  readonly outdatedSide: "app" | "daemon" | "unknown";
-  constructor(daemonProtocolVersion: string | null = null) {
-    const side =
-      daemonProtocolVersion === null
-        ? null
-        : outdatedSide(daemonProtocolVersion);
-    super(
-      side === "remote"
-        ? "The Mac app is out of date. Update Thinkite on your Mac, then try again."
-        : side === "local"
-          ? "This app is out of date. Update Thinkite from the App Store, then try again."
-          : "Thinkite is out of date. Update both the iPhone app and the Mac app to the latest version, then try again.",
-    );
-    this.name = "IncompatibleProtocolError";
-    this.daemonProtocolVersion = daemonProtocolVersion;
-    this.outdatedSide =
-      side === "remote" ? "daemon" : side === "local" ? "app" : "unknown";
-  }
-}
+// Re-exported so consumers (daemon-client-context) keep their import
+// path; the class itself moved to wire-transport.ts with the handshake
+// that throws it.
+export { IncompatibleProtocolError } from "./wire-transport";
 
 // SecureStore restricts keys to [A-Za-z0-9._-] — no slashes / colons. Bump
 // the trailing version when the persisted shape changes — older entries
@@ -209,6 +167,11 @@ export interface SessionStatesCallbacks {
  */
 const CONNECT_TIMEOUT_MS = 10_000;
 
+/** User-facing copy when the connect deadline trips — blames the most
+ *  likely cause (Pair window closed on the Mac). */
+const CONNECT_TIMEOUT_MESSAGE =
+  "Couldn't reach Mac. Make sure the Pair window is open on your Mac, then tap Retry.";
+
 /**
  * Single underlying WebRTC + RPC transport for the daemon connection.
  * Throwaway: one instance per successful WebRTC handshake; replaced
@@ -245,15 +208,6 @@ export class Transport {
     "onChange" | "onRemove"
   > | null = null;
   /**
-   * Inbound chunk reassembly buffer. Large daemon frames (e.g. a
-   * `subscribe.response` for a long-running session whose settled
-   * transcript exceeds the SCTP wire limit) arrive as multiple chunk
-   * envelopes; this stitches them back into the original JSON before
-   * the regular frame router runs. See `packages/protocol/src/chunking.ts`.
-   */
-  private readonly reassembler = new ChunkReassembler();
-
-  /**
    * `true` once `close()` has been called by the consumer — distinguishes
    * "user / context tore down the connection" from "transport dropped on
    * its own". Drives whether onUnexpectedClose fires.
@@ -268,9 +222,7 @@ export class Transport {
   private onUnexpectedClose: (() => void) | null = null;
 
   private constructor(
-    private readonly signaling: SignalingClient,
-    private readonly peer: WebRTCPeer,
-    private readonly dc: RTCDataChannel,
+    private readonly wire: WireTransport,
     private readonly pending: Map<string, PendingRequest>,
   ) {}
 
@@ -313,235 +265,40 @@ export class Transport {
   }
 
   /**
-   * The single transport-establishment entry point. Wires SignalingClient
-   * + WebRTCPeer together, drives the SDP-fp-pinned WebRTC handshake,
-   * AND performs the wire-version handshake (`hello` → `server_info`)
-   * over the DataChannel before resolving. Identical for pair AND
-   * reconnect — from iOS's POV the two cases differ only in (a) what
-   * pubkey we connect to and (b) whether the daemon already knows our
-   * pubkey (it admits us anyway when its pair-window-open gate is
-   * active).
+   * The single transport-establishment entry point: establish the wire
+   * (WebRTC today; iroh behind the dev toggle next), then run the
+   * shared wire-version handshake (`hello` → `server_info`) before
+   * resolving. Identical for pair AND reconnect — from iOS's POV the
+   * two cases differ only in (a) what pubkey we connect to and (b)
+   * whether the daemon already knows our pubkey (it admits us anyway
+   * when its pair-window-open gate is active).
    *
-   * The single timeout (`CONNECT_TIMEOUT_MS`) covers the whole flow:
-   * signaling open → offer → ICE/DTLS → DC.open → hello → server_info.
-   * On wire-version mismatch the daemon sends an `error` frame with
-   * code `incompatible_protocol` then closes; we surface that text to
-   * the user via the connect error.
+   * One deadline (`CONNECT_TIMEOUT_MS`) covers the whole flow:
+   * establishment → hello → server_info. On wire-version mismatch the
+   * daemon sends an `error` frame with code `incompatible_protocol`
+   * then closes; `helloHandshake` surfaces that as
+   * `IncompatibleProtocolError`.
    */
-  private static connect(
+  private static async connect(
     identity: ClientIdentity,
     daemonPubkey: string,
   ): Promise<Transport> {
-    return new Promise((resolve, reject) => {
-      // daemon-side connection ID we learn from `peers` / `peer.joined`,
-      // used to address candidate / answer frames back to the daemon.
-      let daemonPeerId: string | null = null;
-      let settled = false;
-      const pending = new Map<string, PendingRequest>();
-
-      const cleanup = () => {
-        clearTimeout(timeoutId);
-        try {
-          peer.close();
-        } catch {
-          // ignore
-        }
-        try {
-          signaling.close();
-        } catch {
-          // ignore
-        }
-      };
-      const fail = (err: Error) => {
-        if (settled) return;
-        settled = true;
-        cleanup();
-        reject(err);
-      };
-
-      const timeoutId = setTimeout(() => {
-        fail(
-          new Error(
-            "Couldn't reach Mac. Make sure the Pair window is open on your Mac, then tap Retry.",
-          ),
-        );
-      }, CONNECT_TIMEOUT_MS);
-
-      const peer = new WebRTCPeer({
-        signFingerprint: (transcript) => identity.sign(transcript),
-        verifyFingerprint: async (transcript, sigB64) => {
-          try {
-            return await ed25519.verifyAsync(
-              base64UrlToBytes(sigB64),
-              transcript,
-              base64UrlToBytes(daemonPubkey),
-            );
-          } catch {
-            return false;
-          }
-        },
-        onLocalCandidate: (candidate) => {
-          if (!daemonPeerId) return;
-          signaling.send(daemonPeerId, "candidate", { candidate });
-        },
-        onDataChannelOpen: (dc) => {
-          // DTLS is up — but we haven't done the wire-version handshake
-          // yet. Send `hello` and wire a one-shot listener for the daemon
-          // reply (`server_info` ok, `error` with code
-          // `incompatible_protocol` bad). The promise only resolves when
-          // server_info arrives; the outer timeout still covers this leg.
-          // The hello listener removes itself on success/fail so it
-          // doesn't double-fire alongside `installMessageHandlers`'s
-          // listener for subsequent application traffic.
-          const dcEv = dc as unknown as {
-            addEventListener: (
-              event: string,
-              handler: (e: unknown) => void,
-            ) => void;
-            removeEventListener: (
-              event: string,
-              handler: (e: unknown) => void,
-            ) => void;
-            send: (s: string) => void;
-          };
-          const onHelloReply = (event: unknown) => {
-            const data = (event as { data: unknown }).data;
-            if (typeof data !== "string") return;
-            let frame: {
-              type?: string;
-              code?: string;
-              message?: string;
-              protocolVersion?: string;
-            };
-            try {
-              frame = JSON.parse(data);
-            } catch {
-              return;
-            }
-            if (
-              frame.type === "error" &&
-              frame.code === "incompatible_protocol"
-            ) {
-              dcEv.removeEventListener("message", onHelloReply);
-              // Keep the daemon's diagnostic text (which version it
-              // wanted, which we sent) in a console.warn for debugging;
-              // user-facing string is generic + actionable.
-              if (frame.message) {
-                console.warn(
-                  `daemon reported incompatible_protocol: ${frame.message}`,
-                );
-              }
-              // Version-mismatch rejections carry the daemon's structured
-              // protocolVersion → the error names which side is outdated.
-              // The frame-before-hello misuse rejection omits it → falls
-              // back to the direction-neutral "update both" copy.
-              fail(
-                new IncompatibleProtocolError(frame.protocolVersion ?? null),
-              );
-              return;
-            }
-            if (
-              frame.type === "server_info" &&
-              typeof frame.protocolVersion === "string"
-            ) {
-              if (settled) return;
-              // Defense in depth: daemon should never advertise an
-              // incompatible version in server_info (the protocol pkg's
-              // `isProtocolCompatible` is symmetric), but if the rules
-              // ever drift asymmetrically we'd rather fail cleanly here
-              // than continue and watch frames break in opaque ways.
-              if (!isProtocolCompatible(frame.protocolVersion)) {
-                dcEv.removeEventListener("message", onHelloReply);
-                fail(new IncompatibleProtocolError(frame.protocolVersion));
-                return;
-              }
-              settled = true;
-              clearTimeout(timeoutId);
-              dcEv.removeEventListener("message", onHelloReply);
-              // Signaling has done its job — close to free the worker
-              // connection. Trickle ICE candidates after this point are
-              // unlikely to arrive (and we don't have a path to relay
-              // them anyway); the established DataChannel doesn't depend
-              // on it.
-              try {
-                signaling.close();
-              } catch {
-                // ignore
-              }
-              const client = new Transport(signaling, peer, dc, pending);
-              client.installMessageHandlers();
-              resolve(client);
-            }
-            // Anything else pre-resolve is unexpected — we wait for the
-            // timeout rather than guess at it.
-          };
-          dcEv.addEventListener("message", onHelloReply);
-          try {
-            dcEv.send(
-              JSON.stringify({
-                type: "hello",
-                protocolVersion: PROTOCOL_VERSION,
-              }),
-            );
-          } catch (err) {
-            dcEv.removeEventListener("message", onHelloReply);
-            fail(err instanceof Error ? err : new Error(String(err)));
-          }
-        },
-        onState: (s) => {
-          if (s === "failed") {
-            fail(
-              new Error(
-                "WebRTC connection failed (ICE or DTLS). Network or NAT may be blocking peer-to-peer; try again.",
-              ),
-            );
-          }
-        },
-      });
-
-      const onDaemonAvailable = (daemon: SignalingPeer) => {
-        daemonPeerId = daemon.id;
-        // Daemon sees `peer.joined` from its side and is responsible for
-        // initiating the offer; iOS sits and waits. No-op here.
-      };
-
-      const signaling = new SignalingClient({
-        daemonPubkey,
-        clientPubkey: identity.publicKeyB64,
-        onPeers: (peers) => {
-          const daemon = peers.find((p) => p.role === "daemon");
-          if (daemon) onDaemonAvailable(daemon);
-        },
-        onPeerJoined: (peer) => {
-          if (peer.role === "daemon") onDaemonAvailable(peer);
-        },
-        onOffer: (from, sdp, fpSig, iceServers) => {
-          daemonPeerId = from;
-          // `iceServers` carries the daemon-minted TURN creds (it's the sole
-          // minter). handleOffer applies them before it gathers ICE so our
-          // candidates include the relay; absent them we stay STUN-only.
-          void peer
-            .handleOffer(sdp, fpSig, iceServers)
-            .then(({ answerSdp, fpSig: ourSig }) => {
-              signaling.send(from, "answer", { sdp: answerSdp, fpSig: ourSig });
-            })
-            .catch((err) => {
-              fail(err instanceof Error ? err : new Error(String(err)));
-            });
-        },
-        onCandidate: (_from, candidate) => {
-          void peer.addRemoteCandidate(candidate as RTCIceCandidateInit);
-        },
-        onProtocolError: (reason) => {
-          // Worker-level errors (peer_not_found / missing_to / etc.) are
-          // logged but don't fail the connect — they're typically benign
-          // (e.g. daemon transiently offline so our candidate frame got
-          // rejected). The timeout will catch the actual stuck cases.
-          console.warn(`signaling protocol error: ${reason}`);
-        },
-      });
-      signaling.connect();
-    });
+    const deadlineAt = Date.now() + CONNECT_TIMEOUT_MS;
+    const wire = await connectWebRTCWire(
+      identity,
+      daemonPubkey,
+      deadlineAt,
+      CONNECT_TIMEOUT_MESSAGE,
+    );
+    try {
+      await helloHandshake(wire, deadlineAt, CONNECT_TIMEOUT_MESSAGE);
+    } catch (err) {
+      wire.close();
+      throw err;
+    }
+    const client = new Transport(wire, new Map());
+    client.installMessageHandlers();
+    return client;
   }
 
   /**
@@ -975,12 +732,7 @@ export class Transport {
   close(): void {
     this.intentionallyClosed = true;
     try {
-      this.peer.close();
-    } catch {
-      // already closed
-    }
-    try {
-      this.signaling.close();
+      this.wire.close();
     } catch {
       // already closed
     }
@@ -992,17 +744,9 @@ export class Transport {
     return new Promise((resolve, reject) => {
       this.pending.set(frame.requestId, { resolve, reject });
       try {
-        // react-native-webrtc's RTCDataChannel.send() takes string |
-        // ArrayBuffer | ArrayBufferView; we use string here.
-        // `chunkMessage` yields the original JSON for normal-sized
-        // commands; only an oversized request (e.g. someone pasting
-        // megabytes into a prompt) gets split into envelopes.
-        const dcSend = (this.dc as unknown as { send: (s: string) => void })
-          .send;
-        const json = JSON.stringify(frame);
-        for (const piece of chunkMessage(json)) {
-          dcSend.call(this.dc, piece);
-        }
+        // Serialization/framing/chunking is the wire's business. A
+        // refused write fails THIS request, not the transport.
+        this.wire.send(frame);
       } catch (err) {
         this.pending.delete(frame.requestId);
         reject(err instanceof Error ? err : new Error(String(err)));
@@ -1010,55 +754,15 @@ export class Transport {
     });
   }
 
-  /** Wire DataChannel.onmessage / onclose handlers. Called by `connect`
-   *  exactly once, right after the DC opens. Also swaps the peer's
-   *  state listener from connect-time (rejects the connect Promise) to
-   *  runtime — once the channel is up, ICE/DTLS keepalive failures
-   *  (Mac WiFi off, daemon crash, peer network change) surface as
-   *  `failed` or `closed` on the PC. DataChannel.onclose alone is not
-   *  enough: many WebRTC stacks only fire it on explicit pc.close(),
-   *  so a half-dead PC can sit silent for minutes — settings UI would
-   *  keep showing "online" while the connection is dead. */
+  /** Install the runtime frame router + close handler on the wire.
+   *  Called by `connect` exactly once, right after the hello handshake
+   *  settles (which cleared its own one-shot listeners). Frames arrive
+   *  already decoded, reassembled and parsed — transport quirks like
+   *  chunk envelopes or half-dead-PC detection live in the wire
+   *  implementations. */
   private installMessageHandlers(): void {
-    this.peer.setOnState((s) => {
-      if (s === "failed" || s === "closed") this.onTransportClosed();
-    });
-    const dcEv = this.dc as unknown as {
-      addEventListener: (event: string, handler: (e: unknown) => void) => void;
-    };
-    dcEv.addEventListener("message", (event) => {
-      const data = (event as { data: unknown }).data;
-      let text: string;
-      if (typeof data === "string") {
-        text = data;
-      } else {
-        // BufferSource — shouldn't happen with our JSON wire, but be
-        // permissive in case daemon ever ships binary frames.
-        try {
-          text = new TextDecoder().decode(data as ArrayBuffer);
-        } catch {
-          return;
-        }
-      }
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(text);
-      } catch {
-        return; // ignore non-JSON
-      }
-      // Chunk reassembly. Daemon's `webrtc-peer.send()` splits oversized
-      // frames into envelopes (see `packages/protocol/src/chunking.ts`);
-      // intermediate pieces return `null` and we wait, the last piece
-      // returns the full JSON which we re-parse + route as a normal frame.
-      if (isChunkEnvelope(parsed)) {
-        const assembled = this.reassembler.push(parsed as ChunkEnvelope);
-        if (assembled === null) return;
-        try {
-          parsed = JSON.parse(assembled);
-        } catch {
-          return;
-        }
-      }
+    this.wire.setOnClose(() => this.onTransportClosed());
+    this.wire.setOnFrame((parsed) => {
       const frame = parsed as {
         type?: string;
         requestId?: string;
@@ -1122,8 +826,6 @@ export class Transport {
         slot.resolve(frame);
       }
     });
-
-    dcEv.addEventListener("close", () => this.onTransportClosed());
   }
 
   private onTransportClosed(): void {
