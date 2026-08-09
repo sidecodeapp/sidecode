@@ -4,6 +4,8 @@ import {
   decodeWireFramePayload,
   encodeWireFrame,
   MAX_WIRE_FRAME_BYTES,
+  utf8DecodeFallback,
+  utf8EncodeFallback,
   WIRE_FRAME_HEADER_BYTES,
 } from "./wire-frame.ts";
 
@@ -65,5 +67,37 @@ describe("encodeWireFrame / decode*", () => {
     // 64MiB+ of ASCII — the encoder must throw, not truncate.
     const big = "x".repeat(MAX_WIRE_FRAME_BYTES + 1);
     expect(() => encodeWireFrame(big)).toThrow(/exceeds cap/);
+  });
+});
+
+describe("utf8 fallback codec (Hermes path)", () => {
+  const samples = [
+    "",
+    "plain ascii {}",
+    JSON.stringify({ text: "你好，世界" }),
+    "emoji 👋🎏 + astral 𝄞𐍈",
+    "mixed: ħëllø 你好 👨‍👩‍👧‍👦 end",
+    "x".repeat(10_000) + "汉".repeat(5_000),
+  ];
+
+  it("encode matches TextEncoder byte-for-byte", () => {
+    for (const s of samples) {
+      expect([...utf8EncodeFallback(s)]).toEqual([
+        ...new TextEncoder().encode(s),
+      ]);
+    }
+  });
+
+  it("decode matches TextDecoder", () => {
+    for (const s of samples) {
+      const bytes = new TextEncoder().encode(s);
+      expect(utf8DecodeFallback(bytes)).toBe(new TextDecoder().decode(bytes));
+    }
+  });
+
+  it("roundtrips without native codecs at all", () => {
+    for (const s of samples) {
+      expect(utf8DecodeFallback(utf8EncodeFallback(s))).toBe(s);
+    }
   });
 });

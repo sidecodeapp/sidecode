@@ -14,6 +14,8 @@ import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { base64UrlToBytes } from "./base64";
 import type { ClientIdentity } from "./identity";
+import { connectIrohWire } from "./iroh-wire";
+import { getTransportPreference } from "./transport-preference";
 import { connectWebRTCWire } from "./webrtc-wire";
 import { helloHandshake, type WireTransport } from "./wire-transport";
 
@@ -284,12 +286,21 @@ export class Transport {
     daemonPubkey: string,
   ): Promise<Transport> {
     const deadlineAt = Date.now() + CONNECT_TIMEOUT_MS;
-    const wire = await connectWebRTCWire(
-      identity,
-      daemonPubkey,
-      deadlineAt,
-      CONNECT_TIMEOUT_MESSAGE,
-    );
+    const transportPref = await getTransportPreference();
+    const wire =
+      transportPref === "iroh"
+        ? await connectIrohWire(
+            identity,
+            daemonPubkey,
+            deadlineAt,
+            CONNECT_TIMEOUT_MESSAGE,
+          )
+        : await connectWebRTCWire(
+            identity,
+            daemonPubkey,
+            deadlineAt,
+            CONNECT_TIMEOUT_MESSAGE,
+          );
     try {
       await helloHandshake(wire, deadlineAt, CONNECT_TIMEOUT_MESSAGE);
     } catch (err) {

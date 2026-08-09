@@ -23,6 +23,13 @@ export interface ClientIdentity {
   publicKeyB64: string;
   /** Sign arbitrary bytes with the private key. Returns base64url signature. */
   sign(bytes: Uint8Array): Promise<string>;
+  /**
+   * The raw 32-byte ed25519 seed — doubles as the iroh secret key, so
+   * the iroh wire's EndpointId IS `publicKeyB64` and the daemon's
+   * known_clients gate admits us with no extra handshake (mirrors the
+   * daemon-side `seedFromPrivateKey` derivation, validated in phase 2).
+   */
+  privateKeySeed: Uint8Array;
 }
 
 // SecureStore restricts keys to [A-Za-z0-9._-] — no slashes / colons.
@@ -72,6 +79,7 @@ async function materialize(privateKey: Uint8Array): Promise<ClientIdentity> {
     publicKeyB64: bytesToBase64Url(publicKey),
     sign: async (bytes) =>
       bytesToBase64Url(await ed25519.signAsync(bytes, privateKey)),
+    privateKeySeed: privateKey,
   };
 }
 

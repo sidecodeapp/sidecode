@@ -8,6 +8,7 @@ import {
   Section,
   Spacer,
   Text,
+  Toggle,
 } from "@expo/ui/swift-ui";
 import {
   font,
@@ -18,6 +19,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { router, Stack } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   useSetThemePreference,
   useThemePreference,
@@ -25,6 +27,11 @@ import {
 import { statusColor, useDaemonClient } from "@/lib/daemon-client-context";
 import { clearLastUsedCwd } from "@/lib/last-used-cwd";
 import type { ThemePref } from "@/lib/theme-preference";
+import {
+  getTransportPreference,
+  setTransportPreference,
+  type TransportPref,
+} from "@/lib/transport-preference";
 
 /**
  * Settings root, iOS-only. Uses `@expo/ui/swift-ui` (Form, Section, Button +
@@ -133,6 +140,7 @@ export default function SettingsIndexScreen() {
                 label="iroh probe"
                 onPress={() => router.push("/dev/iroh")}
               />
+              <TransportToggle />
               <Button
                 label="Clear last cwd (test placeholder)"
                 onPress={onClearLastCwd}
@@ -142,6 +150,31 @@ export default function SettingsIndexScreen() {
         </Form>
       </Host>
     </>
+  );
+}
+
+/**
+ * Dev toggle: dial the daemon over iroh instead of WebRTC on the NEXT
+ * (re)connect — flipping it doesn't tear down a live transport, so
+ * toggle + background/foreground the app (or wait for a natural
+ * reconnect) to switch. Same pairing identity either way; the daemon's
+ * iroh listener is always on.
+ */
+function TransportToggle() {
+  const [pref, setPref] = useState<TransportPref | null>(null);
+  useEffect(() => {
+    void getTransportPreference().then(setPref);
+  }, []);
+  return (
+    <Toggle
+      label="iroh transport (next connect)"
+      isOn={pref === "iroh"}
+      onIsOnChange={(on) => {
+        const next: TransportPref = on ? "iroh" : "webrtc";
+        setPref(next);
+        void setTransportPreference(next);
+      }}
+    />
   );
 }
 
