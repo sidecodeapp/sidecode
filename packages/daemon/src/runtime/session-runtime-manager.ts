@@ -583,7 +583,7 @@ export class SessionRuntimeManager<T> {
       }
       if (runtime.loopPromise) {
         // Per-runtime timeout: a stuck loop shouldn't hang the whole drain.
-        // Outer process-level forceExit (in bin/sidecode.ts) is the final
+        // Outer process-level forceExit (in bin/thinkite.ts) is the final
         // safety net for catastrophic hangs.
         await Promise.race([
           runtime.loopPromise.catch(() => {}),

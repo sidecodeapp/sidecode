@@ -3,12 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "license": "Apache-2.0",
-  "description": "macOS daemon for sidecode — wraps Claude Agent SDK and exposes it to mobile clients",
+  "description": "macOS daemon for sidecode \u2014 wraps Claude Agent SDK and exposes it to mobile clients",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "sidecode": "./dist/bin/sidecode.js"
+    "thinkite": "./dist/bin/thinkite.js",
+    "sidecode": "./dist/bin/thinkite.js"
   },
   "files": [
     "dist",
@@ -21,11 +22,11 @@
     "darwin"
   ],
   "scripts": {
-    "dev": "bun --watch src/bin/sidecode.ts up",
-    "pair": "bun src/bin/sidecode.ts pair",
-    "build": "tsc -b tsconfig.json && chmod +x ./dist/bin/sidecode.js",
+    "dev": "bun --watch src/bin/thinkite.ts up",
+    "pair": "bun src/bin/thinkite.ts pair",
+    "build": "tsc -b tsconfig.json && chmod +x ./dist/bin/thinkite.js",
     "typecheck": "tsc -b tsconfig.json",
-    "start": "node ./dist/bin/sidecode.js",
+    "start": "node ./dist/bin/thinkite.js",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {

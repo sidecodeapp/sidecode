@@ -497,7 +497,7 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
       // finish its current JSONL write before the transport tears down
       // and the process exits. SDK's `close()` triggers an internal 5s
       // grace; per-runtime timeoutMs caps how long we wait per session.
-      // bin/sidecode.ts's outer 10s forceExit guards against catastrophic
+      // bin/thinkite.ts's outer 10s forceExit guards against catastrophic
       // hangs from there.
       await runtimeManager.shutdown(5000);
       // Close all CCR bridge mirrors + stop the OAuth refresh timer AFTER

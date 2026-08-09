@@ -59,7 +59,7 @@ async function main(): Promise<void> {
       const home = resolveThinkiteHome();
       const identity = loadOrCreateIdentity(home);
       const known = KnownClients.load(home);
-      console.log(`sidecode home:    ${home}`);
+      console.log(`thinkite home:    ${home}`);
       console.log(`fingerprint:      ${identity.fingerprint}`);
       console.log(`paired clients:   ${known.list().length}`);
       for (const c of known.list()) {
@@ -80,7 +80,7 @@ async function main(): Promise<void> {
     case "version":
     case "--version":
     case "-v":
-      console.log(`sidecode (protocol ${PROTOCOL_VERSION})`);
+      console.log(`thinkite (protocol ${PROTOCOL_VERSION})`);
       return;
 
     case "help":
@@ -90,17 +90,17 @@ async function main(): Promise<void> {
       return;
 
     default:
-      console.error(`sidecode: unknown command "${subcommand}"\n`);
+      console.error(`thinkite: unknown command "${subcommand}"\n`);
       printHelp();
       process.exit(1);
   }
 }
 
 function printHelp(): void {
-  console.log(`sidecode — remote-control Claude Code from your phone
+  console.log(`thinkite — remote-control Claude Code from your phone
 
 Usage:
-  sidecode <command>
+  thinkite <command>
 
 Commands:
   up, start          Start the daemon in the foreground
