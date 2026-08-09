@@ -71,6 +71,32 @@ function buildIdentity(privateKey: KeyObject, publicKey: KeyObject): Identity {
   };
 }
 
+/**
+ * Extract the raw 32-byte ed25519 seed from a Node private KeyObject.
+ * This is what makes the pairing identity double as the iroh secret key:
+ * feeding the seed to iroh's `EndpointBuilder.secretKey` yields an
+ * EndpointId byte-identical to `publicKeyB64` (validated in phase 2 —
+ * see iroh-probe.ts).
+ */
+export function seedFromPrivateKey(privateKey: KeyObject): Buffer {
+  const jwk = privateKey.export({ format: "jwk" }) as { d?: string };
+  if (!jwk.d) throw new Error("ed25519 private key missing JWK 'd' field");
+  const seed = Buffer.from(jwk.d, "base64url");
+  if (seed.length !== 32) {
+    throw new Error(`expected 32-byte ed25519 seed, got ${seed.length}`);
+  }
+  return seed;
+}
+
+/** Fingerprint of a base64url raw ed25519 pubkey — same derivation as
+ *  `Identity.fingerprint` (sha256 of the raw key bytes, first 16 hex). */
+export function fingerprintFromPubkeyB64(publicKeyB64: string): string {
+  return createHash("sha256")
+    .update(Buffer.from(publicKeyB64, "base64url"))
+    .digest("hex")
+    .slice(0, 16);
+}
+
 /** Decode a base64url ed25519 pubkey back into a Node KeyObject for verify(). */
 export function publicKeyFromB64(b64url: string): KeyObject {
   const raw = Buffer.from(b64url, "base64url");

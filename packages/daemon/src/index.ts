@@ -31,6 +31,7 @@ import {
   listSidecodeSessions,
   writeBridgeWorkerState,
 } from "./sidecode-sessions.ts";
+import { IrohPeerServer } from "./iroh-peer-server.ts";
 import { WebRTCPeerServer } from "./webrtc-peer.ts";
 
 export interface DaemonOptions {
@@ -406,6 +407,29 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   });
   webrtc.start();
 
+  // iroh listener (phase 3) — same identity, same known_clients gate,
+  // same commandHandler; runs alongside WebRTC. No client traffic
+  // arrives here until the app's dev toggle dials it, so always-on is
+  // additive. Failure to load the napi binding (or to bind) degrades to
+  // a log line — WebRTC remains the default path either way.
+  const iroh = new IrohPeerServer({
+    identity,
+    knownClients,
+    commandHandler,
+    isPairing: () => pairingOpen,
+    log: (event, data) =>
+      console.log(
+        `[sidecode] ${event}${data ? ` ${JSON.stringify(data)}` : ""}`,
+      ),
+  });
+  void iroh.start().catch((err: unknown) => {
+    console.log(
+      `[sidecode] iroh.unavailable ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
+  });
+
   // M3.4 startup re-attach (M3.6 SCOPE — includes archived sessions). Scan
   // sidecode metadata for any session with a `bridge` field and revive the
   // BridgeTransport. Fire-and-forget: daemon shouldn't block iOS accept on
@@ -462,7 +486,8 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   return {
     fingerprint: identity.fingerprint,
     pairedClientCount: () => knownClients.list().length,
-    authenticatedPeerCount: () => webrtc.authenticatedCount(),
+    authenticatedPeerCount: () =>
+      webrtc.authenticatedCount() + iroh.authenticatedCount(),
     fetchPlanUsage: createPlanUsageFetcher(oauth),
     createPairOffer: (serviceName) => {
       const { encoded } = createPairOffer(identity, serviceName);
@@ -515,6 +540,7 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
       // wrapper.
       for (const conn of [...localConnections]) conn.close();
       await webrtc.stop();
+      await iroh.stop();
       console.log("sidecode daemon stopped");
     },
   };

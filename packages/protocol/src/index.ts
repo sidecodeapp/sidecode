@@ -22,6 +22,14 @@ export {
   extractDtlsFingerprint,
 } from "./sdp-fingerprint.ts";
 export {
+  decodeWireFrameLength,
+  decodeWireFramePayload,
+  encodeWireFrame,
+  IROH_RPC_ALPN,
+  MAX_WIRE_FRAME_BYTES,
+  WIRE_FRAME_HEADER_BYTES,
+} from "./wire-frame.ts";
+export {
   type CommandContext,
   type CommandHandling,
   getCommandsForContext,

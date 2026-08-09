@@ -1,5 +1,4 @@
-import type { KeyObject } from "node:crypto";
-import { loadOrCreateIdentity } from "./identity.ts";
+import { loadOrCreateIdentity, seedFromPrivateKey } from "./identity.ts";
 
 /**
  * Phase-2 dev probe: bind an iroh endpoint on the daemon's long-lived
@@ -17,17 +16,6 @@ import { loadOrCreateIdentity } from "./identity.ts";
  */
 
 const ALPN = "iroh-ffi/echo/0"; // matches the app dev screen's probe ALPN
-
-/** Extract the raw 32-byte ed25519 seed from a Node private KeyObject. */
-function seedFromPrivateKey(privateKey: KeyObject): Buffer {
-  const jwk = privateKey.export({ format: "jwk" }) as { d?: string };
-  if (!jwk.d) throw new Error("ed25519 private key missing JWK 'd' field");
-  const seed = Buffer.from(jwk.d, "base64url");
-  if (seed.length !== 32) {
-    throw new Error(`expected 32-byte ed25519 seed, got ${seed.length}`);
-  }
-  return seed;
-}
 
 export async function runIrohProbe(home: string): Promise<void> {
   // Lazy import: keeps the napi binding off every other subcommand's path.
