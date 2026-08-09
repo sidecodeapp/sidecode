@@ -8,7 +8,7 @@ import {
 import { join } from "node:path";
 
 /**
- * `$SIDECODE_HOME/daemon.lock` records that a daemon owns this home, so
+ * `$THINKITE_HOME/daemon.lock` records that a daemon owns this home, so
  * that one-shot CLI commands (notably `sidecode pair`) can detect it and
  * refuse to spawn a competing one.
  *

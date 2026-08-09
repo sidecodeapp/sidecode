@@ -11,7 +11,7 @@ import {
 } from "./bridge/startup-reattach.ts";
 import { deleteDaemonLock, writeDaemonLock } from "./daemon-lock.ts";
 import { GitWatcherRegistry } from "./git-watch.ts";
-import { resolveSidecodeHome } from "./home.ts";
+import { resolveThinkiteHome } from "./home.ts";
 import { loadOrCreateIdentity } from "./identity.ts";
 import { KnownClients } from "./known-clients.ts";
 import {
@@ -34,7 +34,7 @@ import {
 import { WebRTCPeerServer } from "./webrtc-peer.ts";
 
 export interface DaemonOptions {
-  /** Override SIDECODE_HOME. */
+  /** Override THINKITE_HOME. */
   homeDir?: string;
   /** Override signaling host (for `wrangler dev`). */
   signalingHost?: string;
@@ -57,7 +57,7 @@ export type { DaemonLock } from "./daemon-lock.ts";
 // record); a host that may coexist with another daemon (deno desktop while
 // the menubar app runs) checks before starting.
 export { readActiveDaemonLock } from "./daemon-lock.ts";
-export { resolveSidecodeHome } from "./home.ts";
+export { resolveThinkiteHome } from "./home.ts";
 export type {
   LocalConnection,
   LocalConnectionOptions,
@@ -128,7 +128,7 @@ export interface Daemon {
 }
 
 export async function start(options: DaemonOptions = {}): Promise<Daemon> {
-  const home = options.homeDir ?? resolveSidecodeHome();
+  const home = options.homeDir ?? resolveThinkiteHome();
   const identity = loadOrCreateIdentity(home);
   const knownClients = KnownClients.load(home);
 
@@ -440,7 +440,7 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   // mint offers without spawning their own daemon. Address fields are
   // gone — the menubar reaches the daemon via the in-process function
   // call surface above, and the CLI does the same via the spawned-process
-  // model. The lock just records "a daemon owns this $SIDECODE_HOME".
+  // model. The lock just records "a daemon owns this $THINKITE_HOME".
   writeDaemonLock(home, {
     pid: process.pid,
     startedAt: Date.now(),

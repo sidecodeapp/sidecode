@@ -23,7 +23,7 @@ import {
   type PlanUsageResult,
   type PlanUsageWindow,
   readActiveDaemonLock,
-  resolveSidecodeHome,
+  resolveThinkiteHome,
   start as startDaemon,
 } from "@thinkite/daemon";
 import {
@@ -191,7 +191,7 @@ async function claudeVersion(
 // recipe carried over).
 let daemon: Daemon | null = null;
 {
-  const home = resolveSidecodeHome(); // ensures the dir exists
+  const home = resolveThinkiteHome(); // ensures the dir exists
   const lock = readActiveDaemonLock(home);
   if (lock) {
     console.warn(

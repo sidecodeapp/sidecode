@@ -16,7 +16,7 @@ import { join } from "node:path";
 
 /**
  * The daemon's long-lived ed25519 host identity. Generated on first run and
- * persisted in $SIDECODE_HOME/identity.ed25519. Acts like an SSH host key:
+ * persisted in $THINKITE_HOME/identity.ed25519. Acts like an SSH host key:
  * iOS clients TOFU on the fingerprint at first pair, then verify identity
  * across reconnects without re-pairing.
  */

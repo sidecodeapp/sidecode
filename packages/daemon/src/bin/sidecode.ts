@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { PROTOCOL_VERSION } from "@thinkite/protocol";
-import { resolveSidecodeHome } from "../home.ts";
+import { resolveThinkiteHome } from "../home.ts";
 import { loadOrCreateIdentity } from "../identity.ts";
 import { start } from "../index.ts";
 import { KnownClients } from "../known-clients.ts";
@@ -56,7 +56,7 @@ async function main(): Promise<void> {
     }
 
     case "status": {
-      const home = resolveSidecodeHome();
+      const home = resolveThinkiteHome();
       const identity = loadOrCreateIdentity(home);
       const known = KnownClients.load(home);
       console.log(`sidecode home:    ${home}`);
@@ -70,7 +70,7 @@ async function main(): Promise<void> {
     }
 
     case "logs":
-      console.log("TODO: tail $SIDECODE_HOME/daemon.log");
+      console.log("TODO: tail $THINKITE_HOME/daemon.log");
       return;
 
     case "install-agent":

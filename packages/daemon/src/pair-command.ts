@@ -1,15 +1,15 @@
 import { hostname } from "node:os";
 import QRCode from "qrcode";
 import { readActiveDaemonLock } from "./daemon-lock.ts";
-import { resolveSidecodeHome } from "./home.ts";
+import { resolveThinkiteHome } from "./home.ts";
 import { loadOrCreateIdentity } from "./identity.ts";
 import { createPairOffer } from "./pairing.ts";
 
 /**
  * Implementation of the `sidecode pair` subcommand.
  *
- * Stateless print: reads identity from $SIDECODE_HOME, confirms the
- * running `sidecode up` daemon via $SIDECODE_HOME/daemon.lock, and prints
+ * Stateless print: reads identity from $THINKITE_HOME, confirms the
+ * running `sidecode up` daemon via $THINKITE_HOME/daemon.lock, and prints
  * a fresh pair.offer for it. Does NOT spawn a server of its own — safe
  * to run multiple times. The offer is just `daemonIdentityPublicKey +
  * serviceName`; the signaling worker handles discovery; admission of
@@ -17,7 +17,7 @@ import { createPairOffer } from "./pairing.ts";
  * the menubar Pair window is open).
  */
 export async function runPairCommand(_args: readonly string[]): Promise<void> {
-  const home = resolveSidecodeHome();
+  const home = resolveThinkiteHome();
   const identity = loadOrCreateIdentity(home);
 
   const lock = readActiveDaemonLock(home);
