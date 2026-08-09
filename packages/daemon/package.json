@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "license": "Apache-2.0",
-  "description": "macOS daemon for sidecode \u2014 wraps Claude Agent SDK and exposes it to mobile clients",
+  "description": "macOS daemon for sidecode — wraps Claude Agent SDK and exposes it to mobile clients",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.207",
+    "@number0/iroh": "^1.1.0",
     "@thinkite/protocol": "workspace:*",
     "diff": "^9.0.0",
     "node-datachannel": "^0.32.3",

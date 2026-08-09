@@ -129,6 +129,10 @@ export default function SettingsIndexScreen() {
                 label="KeyboardExtender spike"
                 onPress={() => router.push("/dev/keyboard-extender")}
               />
+              <DisclosureRow
+                label="iroh probe"
+                onPress={() => router.push("/dev/iroh")}
+              />
               <Button
                 label="Clear last cwd (test placeholder)"
                 onPress={onClearLastCwd}

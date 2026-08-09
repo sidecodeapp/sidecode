@@ -73,6 +73,15 @@ async function main(): Promise<void> {
       console.log("TODO: tail $THINKITE_HOME/daemon.log");
       return;
 
+    case "iroh-probe": {
+      // Dev-only: echo-accept on the daemon identity over iroh. See
+      // iroh-probe.ts — lazy import keeps the napi binding off every
+      // other subcommand's path.
+      const { runIrohProbe } = await import("../iroh-probe.ts");
+      await runIrohProbe(resolveThinkiteHome());
+      return;
+    }
+
     case "install-agent":
       console.log("TODO: install launchd plist to ~/Library/LaunchAgents/");
       return;

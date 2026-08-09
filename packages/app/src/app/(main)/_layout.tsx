@@ -68,6 +68,7 @@ export default function MainLayout() {
         />
         {/* Dev probe pages — keep as standard pushes, no modal. */}
         <Stack.Screen name="dev/keyboard-extender" />
+        <Stack.Screen name="dev/iroh" />
       </Stack.Protected>
     </Stack>
   );
