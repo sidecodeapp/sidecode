@@ -11,8 +11,9 @@ import {
 import { font, foregroundStyle } from "@expo/ui/swift-ui/modifiers";
 import { PROTOCOL_VERSION } from "@thinkite/protocol";
 import { Stack } from "expo-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Alert } from "react-native";
+import type { TransportDiagnostics } from "@/lib/daemon-client";
 import {
   statusColor,
   statusLabel,
@@ -36,7 +37,19 @@ import {
  * and source the record by id; the section structure carries over.
  */
 export default function SettingsHostScreen() {
-  const { paired, unpair, connectionStatus } = useDaemonClient();
+  const { paired, unpair, connectionStatus, client } = useDaemonClient();
+
+  // Phase-4 measurement panel: poll live wire diagnostics while this
+  // screen is up. 1s is fast enough to watch a QUIC path migrate
+  // during a roaming test, cheap enough to not matter (iroh samples
+  // are synchronous FFI reads; WebRTC returns a constant).
+  const [diag, setDiag] = useState<TransportDiagnostics | null>(null);
+  useEffect(() => {
+    const sample = () => setDiag(client.transportDiagnostics());
+    sample();
+    const id = setInterval(sample, 1000);
+    return () => clearInterval(id);
+  }, [client]);
 
   const onForget = () => {
     Alert.alert(
@@ -91,6 +104,58 @@ export default function SettingsHostScreen() {
               </Text>
             </InfoRow>
           </Section>
+          {/* Live wire panel (phase-4 measurements). Rows degrade to "—"
+              while offline; the paths list only exists on iroh. */}
+          <Section title="Connection">
+            <InfoRow label="Transport">
+              <Text modifiers={[foregroundStyle("#8E8E93")]}>
+                {diag === null
+                  ? "—"
+                  : diag.kind === "iroh"
+                    ? "iroh"
+                    : "WebRTC"}
+              </Text>
+            </InfoRow>
+            <InfoRow label="Connected in">
+              <Text
+                modifiers={[
+                  font({ design: "monospaced" }),
+                  foregroundStyle("#8E8E93"),
+                ]}
+              >
+                {diag === null
+                  ? "—"
+                  : `${diag.wireMs + diag.helloMs} ms (wire ${diag.wireMs} + hello ${diag.helloMs})`}
+              </Text>
+            </InfoRow>
+            {diag?.rttMs !== undefined && (
+              <InfoRow label="RTT">
+                <Text
+                  modifiers={[
+                    font({ design: "monospaced" }),
+                    foregroundStyle("#8E8E93"),
+                  ]}
+                >
+                  {diag.rttMs} ms
+                </Text>
+              </InfoRow>
+            )}
+            {diag?.paths?.map((p) => (
+              <InfoRow
+                key={p.remoteAddr}
+                label={p.isSelected ? "Path ●" : "Path"}
+              >
+                <Text
+                  modifiers={[
+                    font({ design: "monospaced", size: 12 }),
+                    foregroundStyle("#8E8E93"),
+                  ]}
+                >
+                  {`${p.kind} ${shortAddr(p.remoteAddr)} ${p.rttMs}ms`}
+                </Text>
+              </InfoRow>
+            ))}
+          </Section>
           <Section>
             {/* biome-ignore lint/a11y/useValidAriaRole: SwiftUI ButtonRole
                 ('default' | 'cancel' | 'destructive'), not an HTML/ARIA
@@ -102,6 +167,12 @@ export default function SettingsHostScreen() {
       </Host>
     </>
   );
+}
+
+/** Compress a path address for one Form row: relay URLs lose scheme +
+ *  trailing dot-slash noise, IPs pass through. */
+function shortAddr(addr: string): string {
+  return addr.replace(/^https?:\/\//, "").replace(/\.?\/?$/, "");
 }
 
 /**

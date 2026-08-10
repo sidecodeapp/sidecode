@@ -90,6 +90,13 @@ class WebRTCWireTransport implements WireTransport {
     dcEv.addEventListener("close", () => this.fireClose());
   }
 
+  diagnostics() {
+    // No cheap synchronous rtt/path introspection on RTCPeerConnection
+    // (getStats is async + verbose) — kind is all the panel needs to
+    // confirm which wire is live.
+    return { kind: "webrtc" as const };
+  }
+
   send(frame: unknown): void {
     // react-native-webrtc's RTCDataChannel.send() takes string |
     // ArrayBuffer | ArrayBufferView; we use string here. `chunkMessage`

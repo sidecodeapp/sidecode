@@ -17,7 +17,19 @@ import type { ClientIdentity } from "./identity";
 import { connectIrohWire } from "./iroh-wire";
 import { getTransportPreference } from "./transport-preference";
 import { connectWebRTCWire } from "./webrtc-wire";
-import { helloHandshake, type WireTransport } from "./wire-transport";
+import {
+  helloHandshake,
+  type WireDiagnostics,
+  type WireTransport,
+} from "./wire-transport";
+
+/** Wire diagnostics + connect timings, as served by the facade. */
+export interface TransportDiagnostics extends WireDiagnostics {
+  /** Wire establishment (signaling+ICE+DTLS, or QUIC dial). */
+  wireMs: number;
+  /** hello → server_info round trip on the established wire. */
+  helloMs: number;
+}
 
 // Re-exported so consumers (daemon-client-context) keep their import
 // path; the class itself moved to wire-transport.ts with the handshake
@@ -226,7 +238,19 @@ export class Transport {
   private constructor(
     private readonly wire: WireTransport,
     private readonly pending: Map<string, PendingRequest>,
+    /** Connect-time measurements (phase-4 panel): wire establishment
+     *  and hello handshake durations. */
+    private readonly timings: { wireMs: number; helloMs: number },
   ) {}
+
+  /** Live wire diagnostics + connect timings for the Settings panel. */
+  transportDiagnostics(): TransportDiagnostics {
+    return {
+      ...this.wire.diagnostics(),
+      wireMs: this.timings.wireMs,
+      helloMs: this.timings.helloMs,
+    };
+  }
 
   /**
    * Register a one-shot handler invoked when the underlying transport
@@ -285,7 +309,8 @@ export class Transport {
     identity: ClientIdentity,
     daemonPubkey: string,
   ): Promise<Transport> {
-    const deadlineAt = Date.now() + CONNECT_TIMEOUT_MS;
+    const startedAt = Date.now();
+    const deadlineAt = startedAt + CONNECT_TIMEOUT_MS;
     const transportPref = await getTransportPreference();
     const wire =
       transportPref === "iroh"
@@ -301,13 +326,15 @@ export class Transport {
             deadlineAt,
             CONNECT_TIMEOUT_MESSAGE,
           );
+    const wireMs = Date.now() - startedAt;
     try {
       await helloHandshake(wire, deadlineAt, CONNECT_TIMEOUT_MESSAGE);
     } catch (err) {
       wire.close();
       throw err;
     }
-    const client = new Transport(wire, new Map());
+    const helloMs = Date.now() - startedAt - wireMs;
+    const client = new Transport(wire, new Map(), { wireMs, helloMs });
     client.installMessageHandlers();
     return client;
   }
@@ -1022,6 +1049,13 @@ export class DaemonClient {
     this.readyPromise = new Promise((r) => {
       this.resolveReady = r;
     });
+  }
+
+  /** Live diagnostics of the current transport, or null while offline.
+   *  Poll from the Settings host panel — iroh samples rtt/paths fresh
+   *  on every call. */
+  transportDiagnostics(): TransportDiagnostics | null {
+    return this.transport?.transportDiagnostics() ?? null;
   }
 
   /** Provider hook. Called after each successful Transport handshake.

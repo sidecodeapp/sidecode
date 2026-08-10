@@ -16,11 +16,36 @@ import {
  * serialization, framing and reassembly are implementation details, so
  * the RPC layer above is transport-blind.
  */
+/** One network path of a live iroh connection (direct IP or relay). */
+export interface WirePathInfo {
+  /** `ip:port` for direct paths, relay URL for relay paths. */
+  remoteAddr: string;
+  /** True if QUIC currently sends application data over this path. */
+  isSelected: boolean;
+  kind: "ip" | "relay";
+  rttMs: number;
+}
+
+/**
+ * Point-in-time transport diagnostics for the phase-4 measurement
+ * panel (Settings → host). WebRTC reports only its kind; iroh samples
+ * live QUIC state (rtt, open paths) on every call — poll to watch
+ * path migration during roaming tests.
+ */
+export interface WireDiagnostics {
+  kind: "webrtc" | "iroh";
+  rttMs?: number;
+  paths?: WirePathInfo[];
+}
+
 export interface WireTransport {
   /** Send one protocol frame. May throw synchronously when the
    *  underlying channel refuses the write (caller decides whether that
    *  fails one request or the whole transport). */
   send(frame: unknown): void;
+  /** Sample transport diagnostics. Cheap; safe after close (fields
+   *  degrade to undefined). */
+  diagnostics(): WireDiagnostics;
   /** Replace the inbound-frame listener. Frames arrive fully
    *  reassembled and JSON-parsed. Latest registration wins (the hello
    *  handshake registers first, then hands off to the frame router);

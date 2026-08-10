@@ -15,7 +15,11 @@ import {
 } from "react-native-iroh-ffi";
 import { base64UrlToBytes } from "./base64";
 import type { ClientIdentity } from "./identity";
-import type { WireTransport } from "./wire-transport";
+import type {
+  WireDiagnostics,
+  WirePathInfo,
+  WireTransport,
+} from "./wire-transport";
 
 /**
  * iroh implementation of `WireTransport`: one QUIC connection to the
@@ -114,6 +118,24 @@ class IrohWireTransport implements WireTransport {
       }
       this.onFrame?.(parsed);
     }
+  }
+
+  diagnostics(): WireDiagnostics {
+    let rttMs: number | undefined;
+    let paths: WirePathInfo[] | undefined;
+    try {
+      const rtt = this.conn.rtt();
+      rttMs = rtt === undefined ? undefined : Number(rtt);
+      paths = this.conn.paths().map((p) => ({
+        remoteAddr: p.remoteAddr,
+        isSelected: p.isSelected,
+        kind: p.isRelay ? ("relay" as const) : ("ip" as const),
+        rttMs: Number(p.rttMs),
+      }));
+    } catch {
+      // conn closed — kind alone still identifies the wire
+    }
+    return { kind: "iroh", rttMs, paths };
   }
 
   send(frame: unknown): void {
