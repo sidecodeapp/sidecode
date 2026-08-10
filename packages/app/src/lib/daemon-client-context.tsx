@@ -253,6 +253,9 @@ export function DaemonClientProvider({ children }: { children: ReactNode }) {
     if (epoch !== epochRef.current) return;
     if (!shouldReconnectRef.current) return;
     clearReconnectTimer();
+    // Phase-4 measurement log: timestamp of loss DETECTION (QUIC idle /
+    // ICE failure / dc close — however the wire noticed).
+    console.log(`[transport] lost ${new Date().toISOString()}`);
     setState({ status: "offline", attempt: 0 });
     const delay = reconnectDelayMs(0);
     reconnectTimerRef.current = setTimeout(() => {
@@ -337,8 +340,11 @@ export function DaemonClientProvider({ children }: { children: ReactNode }) {
             // A genuinely-dead pairing just retries forever at `offline`;
             // the user clears it via Settings → Forget host (`unpair()`).
             const reason = err instanceof Error ? err.message : String(err);
-            setState({ status: "offline", reason, attempt });
             const delay = reconnectDelayMs(attempt);
+            console.log(
+              `[transport] connect attempt=${attempt} failed (${reason}) — retry in ${delay}ms ${new Date().toISOString()}`,
+            );
+            setState({ status: "offline", reason, attempt });
             reconnectTimerRef.current = setTimeout(
               () => handleBootRetry(epoch, attempt),
               delay,
@@ -349,6 +355,12 @@ export function DaemonClientProvider({ children }: { children: ReactNode }) {
           if (epoch !== epochRef.current) {
             transport.close();
             return;
+          }
+          {
+            const d = transport.transportDiagnostics();
+            console.log(
+              `[transport] ready kind=${d.kind} wire=${d.wireMs}ms hello=${d.helloMs}ms attempt=${attempt} ${new Date().toISOString()}`,
+            );
           }
           transport.setOnUnexpectedClose(() => handleUnexpectedClose(epoch));
           transportRef.current = transport;
