@@ -187,6 +187,19 @@ const CONNECT_TIMEOUT_MESSAGE =
   "Couldn't reach Mac. Make sure the Pair window is open on your Mac, then tap Retry.";
 
 /**
+ * Application-layer liveness probe. A peer that dies without a close
+ * frame (kill -9, power loss, cable pull) is otherwise only detected by
+ * the transport's own idle machinery — measured at ~35s on iroh (QUIC
+ * default idle timeout, no FFI knob to tune it) and ~5-15s on WebRTC
+ * (ICE consent). A ping every 10s with a 5s pong deadline bounds silent-
+ * death detection at ~15s worst case on BOTH transports, and as a side
+ * effect keeps QUIC idle timers + NAT mappings warm. Daemon side has
+ * answered `ping` with `pong` since the WebRTC era — no daemon change.
+ */
+const PING_INTERVAL_MS = 10_000;
+const PONG_TIMEOUT_MS = 5_000;
+
+/**
  * Single underlying WebRTC + RPC transport for the daemon connection.
  * Throwaway: one instance per successful WebRTC handshake; replaced
  * wholesale on every reconnect. Consumers should NEVER reference this
@@ -227,6 +240,11 @@ export class Transport {
    * its own". Drives whether onUnexpectedClose fires.
    */
   private intentionallyClosed = false;
+
+  /** Liveness probe timers (see PING_INTERVAL_MS). Started by
+   *  `installMessageHandlers`, cleared on close/teardown. */
+  private pingIntervalId: ReturnType<typeof setInterval> | null = null;
+  private pongTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   /**
    * Optional callback invoked when the transport closes WITHOUT a prior
@@ -769,6 +787,52 @@ export class Transport {
 
   close(): void {
     this.intentionallyClosed = true;
+    this.stopKeepalive();
+    try {
+      this.wire.close();
+    } catch {
+      // already closed
+    }
+  }
+
+  // ─── Liveness probe ─────────────────────────────────────────────
+
+  private startKeepalive(): void {
+    this.pingIntervalId = setInterval(() => {
+      // Previous ping still unanswered when the next tick arrives —
+      // the pong deadline below will close first, so just skip.
+      if (this.pongTimeoutId !== null) return;
+      try {
+        this.wire.send({ type: "ping", t: Date.now() });
+      } catch {
+        // Wire refused the write — it's dead; force the close path.
+        this.probeFailed("ping send failed");
+        return;
+      }
+      this.pongTimeoutId = setTimeout(
+        () => this.probeFailed("pong timeout"),
+        PONG_TIMEOUT_MS,
+      );
+    }, PING_INTERVAL_MS);
+  }
+
+  private stopKeepalive(): void {
+    if (this.pingIntervalId !== null) {
+      clearInterval(this.pingIntervalId);
+      this.pingIntervalId = null;
+    }
+    if (this.pongTimeoutId !== null) {
+      clearTimeout(this.pongTimeoutId);
+      this.pongTimeoutId = null;
+    }
+  }
+
+  /** Probe verdict: peer is silently dead. Close the wire — its close
+   *  listener runs `onTransportClosed`, which fires onUnexpectedClose
+   *  (intentionallyClosed is false) and the provider reconnects. */
+  private probeFailed(reason: string): void {
+    console.log(`[transport] liveness probe failed (${reason})`);
+    this.stopKeepalive();
     try {
       this.wire.close();
     } catch {
@@ -800,6 +864,7 @@ export class Transport {
    *  implementations. */
   private installMessageHandlers(): void {
     this.wire.setOnClose(() => this.onTransportClosed());
+    this.startKeepalive();
     this.wire.setOnFrame((parsed) => {
       const frame = parsed as {
         type?: string;
@@ -811,6 +876,15 @@ export class Transport {
         status?: GitStatus;
         state?: SessionState;
       };
+      // Liveness probe answer — clears the pong deadline armed by the
+      // matching ping. Any pong counts; we don't correlate echoT.
+      if (frame.type === "pong") {
+        if (this.pongTimeoutId !== null) {
+          clearTimeout(this.pongTimeoutId);
+          this.pongTimeoutId = null;
+        }
+        return;
+      }
       // Server-initiated event frame (no requestId). Routed by sessionId
       // to the subscribed callback. Unknown sessionId → silently drop
       // (probably a frame for a session we just unsubscribed).
@@ -867,6 +941,7 @@ export class Transport {
   }
 
   private onTransportClosed(): void {
+    this.stopKeepalive();
     const err = new Error("daemon connection closed");
     for (const [, slot] of this.pending) slot.reject(err);
     this.pending.clear();
