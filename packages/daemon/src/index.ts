@@ -151,7 +151,20 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   // the Pair window's open/close; `WebRTCPeerServer.isPairing` reads it on
   // every `peer.joined`. Closed by default — the window must be open for an
   // unknown pubkey to be admitted.
-  let pairingOpen = false;
+  //
+  // THINKITE_PAIRING_OPEN=1 forces the gate open for the whole daemon
+  // lifetime — dev/CLI affordance for pairing a fresh device when the
+  // daemon runs headless via `thinkite up` (the CLI `pair` command
+  // prints the QR from a separate process, so it can't flip the
+  // in-process gate the way the menubar window does). Don't run a
+  // long-lived daemon with this set: any device that scans the QR (or
+  // learns the pubkey) gets admitted while it's up.
+  let pairingOpen = process.env.THINKITE_PAIRING_OPEN === "1";
+  if (pairingOpen) {
+    console.log(
+      "[sidecode] pairing gate FORCED OPEN via THINKITE_PAIRING_OPEN=1 — new devices will be admitted",
+    );
+  }
 
   // Lazy-populated by slice G's router when it sees its first sendPrompt.
   // Drained on shutdown via daemon.stop() → runtimeManager.shutdown().
