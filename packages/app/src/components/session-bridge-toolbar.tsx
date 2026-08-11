@@ -10,7 +10,7 @@ const BRIDGED_TINT = "#DA7756";
 
 /**
  * Trailing header control for the session detail screen: a single nav-bar
- * button toggling this session's CCR bridge (pure WebRTC ↔ cloud remote
+ * button toggling this session's CCR bridge (pure P2P ↔ cloud remote
  * control). Rendered as its own `Stack.Toolbar placement="right"` so it
  * coexists with the screen's leading hamburger, and kept in its own component
  * so the detail screen stays free of `useDaemonClient` (imperative daemon calls

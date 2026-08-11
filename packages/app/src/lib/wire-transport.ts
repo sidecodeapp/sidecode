@@ -6,15 +6,11 @@ import {
 
 /**
  * Byte-layer seam between `Transport` (the RPC/frame layer in
- * daemon-client.ts) and a concrete transport:
- *
- *   - `webrtc-wire.ts` — DataChannel; owns the signaling/SDP-fp dance,
- *     chunk envelopes (SCTP message cap) and string decode.
- *   - `iroh-wire.ts` — QUIC bi-stream; owns length-prefix framing.
- *
- * Both sides of the interface deal in whole, parsed protocol frames —
- * serialization, framing and reassembly are implementation details, so
- * the RPC layer above is transport-blind.
+ * daemon-client.ts) and a concrete transport — today only
+ * `iroh-wire.ts` (QUIC bi-stream, length-prefix framing), but the seam
+ * stays: both sides of the interface deal in whole, parsed protocol
+ * frames, so the RPC layer above is transport-blind and future wires
+ * (e.g. a PTY side-channel) slot in underneath.
  */
 /** One network path of a live iroh connection (direct IP or relay). */
 export interface WirePathInfo {
@@ -33,13 +29,13 @@ export interface WirePathInfo {
 }
 
 /**
- * Point-in-time transport diagnostics for the phase-4 measurement
- * panel (Settings → host). WebRTC reports only its kind; iroh samples
- * live QUIC state (rtt, open paths) on every call — poll to watch
- * path migration during roaming tests.
+ * Point-in-time transport diagnostics for the measurement panel
+ * (Settings → host). Samples live QUIC state (rtt, open paths) on
+ * every call — poll to watch path migration during roaming tests.
+ * Fields degrade to undefined once the connection is closed.
  */
 export interface WireDiagnostics {
-  kind: "webrtc" | "iroh";
+  kind: "iroh";
   rttMs?: number;
   paths?: WirePathInfo[];
 }
@@ -173,9 +169,7 @@ export function helloHandshake(
     try {
       wire.send({ type: "hello", protocolVersion: PROTOCOL_VERSION });
     } catch (err) {
-      finish(() =>
-        reject(err instanceof Error ? err : new Error(String(err))),
-      );
+      finish(() => reject(err instanceof Error ? err : new Error(String(err))));
     }
   });
 }

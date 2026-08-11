@@ -8,7 +8,7 @@ type BridgeClient = {
 };
 
 /**
- * Confirm-then-toggle this session's CCR bridge (pure WebRTC ↔ cloud remote
+ * Confirm-then-toggle this session's CCR bridge (pure P2P ↔ cloud remote
  * control). Shared by the session-row context menu and the detail-screen header
  * button so the privacy-sensitive copy + the bridge/unbridge dispatch live in
  * exactly one place (no drift between the two entry points).

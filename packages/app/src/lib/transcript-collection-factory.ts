@@ -296,7 +296,7 @@ interface SendMessageVars {
  * Reconciliation (why no flicker, no double bubble): the daemon emits the
  * synthesized append synchronously in `pushPrompt` and fans it out on the
  * subscribe stream BEFORE the sendPrompt RPC ack (the handler sends the ack
- * after pushPrompt returns). Frames are ordered on the DataChannel, so the
+ * after pushPrompt returns). Frames are ordered on the wire, so the
  * sync handler writes the row into the collection's synced store before
  * this `mutationFn` resolves. When the optimistic transaction then settles,
  * the overlay drops onto an already-present synced row (same key) — seamless.

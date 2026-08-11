@@ -83,7 +83,6 @@
           ]
         }
       ],
-      "@config-plugins/react-native-webrtc",
       "expo-status-bar"
     ],
     "experiments": {

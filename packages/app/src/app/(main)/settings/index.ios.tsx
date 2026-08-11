@@ -18,7 +18,6 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { router, Stack } from "expo-router";
-import { useEffect, useState } from "react";
 import {
   useSetThemePreference,
   useThemePreference,
@@ -26,11 +25,6 @@ import {
 import { statusColor, useDaemonClient } from "@/lib/daemon-client-context";
 import { clearLastUsedCwd } from "@/lib/last-used-cwd";
 import type { ThemePref } from "@/lib/theme-preference";
-import {
-  getTransportPreference,
-  setTransportPreference,
-  type TransportPref,
-} from "@/lib/transport-preference";
 
 /**
  * Settings root, iOS-only. Uses `@expo/ui/swift-ui` (Form, Section, Button +
@@ -139,7 +133,6 @@ export default function SettingsIndexScreen() {
                 label="iroh probe"
                 onPress={() => router.push("/dev/iroh")}
               />
-              <TransportMenu />
               <Button
                 label="Clear last cwd (test placeholder)"
                 onPress={onClearLastCwd}
@@ -149,71 +142,6 @@ export default function SettingsIndexScreen() {
         </Form>
       </Host>
     </>
-  );
-}
-
-const TRANSPORT_OPTIONS: { value: TransportPref; label: string }[] = [
-  { value: "webrtc", label: "WebRTC" },
-  { value: "iroh", label: "iroh" },
-];
-
-/**
- * Dev picker: dial the daemon over iroh instead of WebRTC on the NEXT
- * (re)connect — switching doesn't tear down a live transport, so pick
- * + relaunch (or wait for a natural reconnect) to switch. Same pairing
- * identity either way; the daemon's iroh listener is always on.
- *
- * Menu-not-Toggle: same trigger-on-the-right shape as AppearanceMenu,
- * which is the proven @expo/ui selection pattern in this Form (a
- * controlled `Toggle` here never visually flipped on tap).
- */
-function TransportMenu() {
-  const [pref, setPref] = useState<TransportPref>("webrtc");
-  useEffect(() => {
-    void getTransportPreference().then(setPref);
-  }, []);
-  const current = TRANSPORT_OPTIONS.find((o) => o.value === pref);
-
-  return (
-    <HStack alignment="center" spacing={8}>
-      <Text modifiers={[foregroundStyle("primary")]}>
-        Transport (next connect)
-      </Text>
-      <Spacer />
-      <Menu
-        label={
-          <HStack alignment="center" spacing={4}>
-            {/* Same reserved-width trick as AppearanceMenu (expo/expo#44579
-                Menu label clip); "WebRTC" is the longest option. */}
-            <Text
-              modifiers={[
-                foregroundStyle("#8E8E93"),
-                frame({ minWidth: 60, alignment: "trailing" }),
-              ]}
-            >
-              {current?.label ?? "WebRTC"}
-            </Text>
-            <Image
-              systemName="chevron.up.chevron.down"
-              size={12}
-              color="#8E8E93"
-            />
-          </HStack>
-        }
-      >
-        {TRANSPORT_OPTIONS.map((o) => (
-          <Button
-            key={o.value}
-            label={o.label}
-            systemImage={o.value === pref ? "checkmark" : undefined}
-            onPress={() => {
-              setPref(o.value);
-              void setTransportPreference(o.value);
-            }}
-          />
-        ))}
-      </Menu>
-    </HStack>
   );
 }
 

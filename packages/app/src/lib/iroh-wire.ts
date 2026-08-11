@@ -25,7 +25,7 @@ import type {
  * iroh implementation of `WireTransport`: one QUIC connection to the
  * daemon's `IrohPeerServer`, one client-opened bi-stream carrying
  * length-prefix-framed JSON (see protocol/wire-frame.ts). Everything
- * the WebRTC wire does out-of-band comes free here:
+ * the retired WebRTC wire did out-of-band comes free here:
  *
  *   - no signaling worker / SDP / ICE — we dial the daemon's
  *     EndpointId (== the QR pubkey) via relays + pkarr discovery;
@@ -114,7 +114,7 @@ class IrohWireTransport implements WireTransport {
       try {
         parsed = JSON.parse(decodeWireFramePayload(new Uint8Array(body)));
       } catch {
-        continue; // framing intact, payload bad — skip, same as WebRTC wire
+        continue; // framing intact, payload bad — skip the frame
       }
       this.onFrame?.(parsed);
     }
@@ -225,6 +225,6 @@ export async function connectIrohWire(
     clearTimeout(timeoutId);
     // On timeout the losing connect attempt keeps running detached; a
     // late-arriving connection is closed by QUIC idle timeout since no
-    // one ever reads/writes it. Acceptable for a dev-toggle path.
+    // one ever reads/writes it.
   }
 }

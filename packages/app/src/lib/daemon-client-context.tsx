@@ -210,8 +210,8 @@ export function DaemonClientProvider({ children }: { children: ReactNode }) {
   const epochRef = useRef(0);
   // Stable facade — the module-level singleton (see daemon-client.ts). One
   // instance for the whole app process, kept alive across every transport
-  // reconnect. The Transport comes and goes (one per successful WebRTC
-  // handshake); this Provider swaps it via _attachTransport /
+  // reconnect. The Transport comes and goes (one per successful
+  // connect); this Provider swaps it via _attachTransport /
   // _detachTransport without changing the facade identity. Consumers bind
   // to this object and never see a null / re-identified `client`. Held at
   // module scope (not a useRef) so non-React consumers — TanStack DB

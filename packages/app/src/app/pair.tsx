@@ -40,8 +40,8 @@ import { useDaemonClient } from "@/lib/daemon-client-context";
  *
  * The confirmation defends against drive-by UL payloads (a malicious
  * link in iMessage / Mail / a web page). Decoded `serviceName` is the
- * only user-facing recognition signal — pubkey + WebRTC fingerprint
- * pinning handle the cryptographic side under the hood.
+ * only user-facing recognition signal — pubkey pinning (the QUIC
+ * handshake proves it) handles the cryptographic side under the hood.
  *
  * Visual language mirrors the iOS system sign-in / passkey sheet:
  *   - Native iOS sheet header with X close button (top-right)

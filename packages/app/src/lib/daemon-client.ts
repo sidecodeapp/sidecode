@@ -15,8 +15,6 @@ import * as SecureStore from "expo-secure-store";
 import { base64UrlToBytes } from "./base64";
 import type { ClientIdentity } from "./identity";
 import { connectIrohWire } from "./iroh-wire";
-import { getTransportPreference } from "./transport-preference";
-import { connectWebRTCWire } from "./webrtc-wire";
 import {
   helloHandshake,
   type WireDiagnostics,
@@ -25,7 +23,7 @@ import {
 
 /** Wire diagnostics + connect timings, as served by the facade. */
 export interface TransportDiagnostics extends WireDiagnostics {
-  /** Wire establishment (signaling+ICE+DTLS, or QUIC dial). */
+  /** Wire establishment (QUIC dial incl. discovery + path upgrade). */
   wireMs: number;
   /** hello → server_info round trip on the established wire. */
   helloMs: number;
@@ -50,9 +48,9 @@ const PAIRED_STORE_KEY = "sidecode_paired_daemon_v3";
  * What we save after a successful first pair so subsequent launches can
  * reconnect without re-scanning a QR.
  *
- * Post-WebRTC pivot, this is just the daemon's pubkey (= signaling room +
- * fpSig verify key) plus the display label. `fingerprint` is derived from
- * pubkey via `sha256(...).slice(0, 16)` whenever the UI needs it.
+ * Just the daemon's pubkey (== its iroh EndpointId — the dial address)
+ * plus the display label. `fingerprint` is derived from pubkey via
+ * `sha256(...).slice(0, 16)` whenever the UI needs it.
  */
 export interface PairedDaemon {
   daemonIdentityPublicKey: string; // base64url
@@ -165,19 +163,19 @@ export interface SessionStatesCallbacks {
 }
 
 /**
- * Max time we wait from "start connecting" to "DataChannel open". Covers:
- * signaling open + roster + (daemon mints offer) + ICE gather + DTLS.
- * On a healthy LAN the whole flow completes in <200ms; the slack is
- * for slow ICE gathering on hostile networks (STUN-only today; TURN
- * fallback deferred to thinkite/thinkite#6) and for daemon-side
- * delays admitting an unknown pubkey (pair-window open vs not).
+ * Max time we wait from "start connecting" to the hello handshake
+ * settling. Covers: endpoint bind (first connect only) + relay/pkarr
+ * discovery + QUIC dial + direct-path upgrade + hello→server_info.
+ * Measured: ~400ms Wi-Fi cold, ~600ms cellular cold, ~20ms hot
+ * reconnect; the slack is for hostile networks (relay-only paths) and
+ * daemon-side delays admitting an unknown pubkey (pair-window open vs
+ * not).
  *
  * If this trips, the UX message blames the most likely cause: the user
  * forgot to open the Pair window in the desktop app on their Mac.
  *
  * Also bounds the boot "Connecting to daemon…" screen before it falls to
- * `offline`. 10s (was 15s) for a snappier fall-through, still well above the
- * <200ms LAN path and ~2–3s slow-ICE worst case; the retry loop covers overflow.
+ * `offline`; the retry loop covers overflow.
  */
 const CONNECT_TIMEOUT_MS = 10_000;
 
@@ -190,23 +188,23 @@ const CONNECT_TIMEOUT_MESSAGE =
  * Application-layer liveness probe. A peer that dies without a close
  * frame (kill -9, power loss, cable pull) is otherwise only detected by
  * the transport's own idle machinery — measured at ~35s on iroh (QUIC
- * default idle timeout, no FFI knob to tune it) and ~5-15s on WebRTC
- * (ICE consent). A ping every 10s with a 5s pong deadline bounds silent-
- * death detection at ~15s worst case on BOTH transports, and as a side
- * effect keeps QUIC idle timers + NAT mappings warm. Daemon side has
- * answered `ping` with `pong` since the WebRTC era — no daemon change.
+ * default idle timeout, no FFI knob to tune it). A ping every 10s with
+ * a 5s pong deadline bounds silent-death detection at ~15s worst case
+ * (10.5s measured), and as a side effect keeps QUIC idle timers + NAT
+ * mappings warm. Daemon side has answered `ping` with `pong` since the
+ * WebRTC era — no daemon change.
  */
 const PING_INTERVAL_MS = 10_000;
 const PONG_TIMEOUT_MS = 5_000;
 
 /**
- * Single underlying WebRTC + RPC transport for the daemon connection.
- * Throwaway: one instance per successful WebRTC handshake; replaced
- * wholesale on every reconnect. Consumers should NEVER reference this
- * directly — they bind to the stable `DaemonClient` facade below, which
- * holds a `Transport | null` ref and swaps it out across reconnects.
+ * Single underlying wire + RPC transport for the daemon connection.
+ * Throwaway: one instance per successful connect; replaced wholesale on
+ * every reconnect. Consumers should NEVER reference this directly —
+ * they bind to the stable `DaemonClient` facade below, which holds a
+ * `Transport | null` ref and swaps it out across reconnects.
  *
- * Renamed from the old public `DaemonClient` class on the WebRTC facade
+ * Renamed from the old public `DaemonClient` class on the facade
  * refactor (see project_v0_webrtc_pivot.md + the durable-streams /
  * Centrifuge inspiration). The static `pair` / `reconnect` factories
  * stay here — Provider wires `Transport.reconnect(...)` → facade._attach.
@@ -309,10 +307,9 @@ export class Transport {
   }
 
   /**
-   * The single transport-establishment entry point: establish the wire
-   * (WebRTC today; iroh behind the dev toggle next), then run the
-   * shared wire-version handshake (`hello` → `server_info`) before
-   * resolving. Identical for pair AND reconnect — from iOS's POV the
+   * The single transport-establishment entry point: establish the iroh
+   * wire, then run the shared wire-version handshake (`hello` →
+   * `server_info`) before resolving. Identical for pair AND reconnect — from iOS's POV the
    * two cases differ only in (a) what pubkey we connect to and (b)
    * whether the daemon already knows our pubkey (it admits us anyway
    * when its pair-window-open gate is active).
@@ -329,21 +326,12 @@ export class Transport {
   ): Promise<Transport> {
     const startedAt = Date.now();
     const deadlineAt = startedAt + CONNECT_TIMEOUT_MS;
-    const transportPref = await getTransportPreference();
-    const wire =
-      transportPref === "iroh"
-        ? await connectIrohWire(
-            identity,
-            daemonPubkey,
-            deadlineAt,
-            CONNECT_TIMEOUT_MESSAGE,
-          )
-        : await connectWebRTCWire(
-            identity,
-            daemonPubkey,
-            deadlineAt,
-            CONNECT_TIMEOUT_MESSAGE,
-          );
+    const wire = await connectIrohWire(
+      identity,
+      daemonPubkey,
+      deadlineAt,
+      CONNECT_TIMEOUT_MESSAGE,
+    );
     const wireMs = Date.now() - startedAt;
     try {
       await helloHandshake(wire, deadlineAt, CONNECT_TIMEOUT_MESSAGE);
@@ -665,7 +653,7 @@ export class Transport {
   }
 
   /**
-   * CCR upgrade — mirror this pure WebRTC session to a cloud `cse_` so it's
+   * CCR upgrade — mirror this pure P2P session to a cloud `cse_` so it's
    * visible + drivable from claude.ai / Claude Desktop. Daemon attaches the
    * bridge at the next turn boundary; the iOS-facing `bridged` flag flips via
    * the `subscribeSessions` push once BridgeService worker-state lands. Throws
@@ -683,7 +671,7 @@ export class Transport {
 
   /**
    * CCR downgrade ("make private") — drop the cloud mirror; the session
-   * continues as a pure WebRTC session. Idempotent: unbridging a session that
+   * continues as a pure P2P session. Idempotent: unbridging a session that
    * isn't bridged is a no-op success.
    */
   async unbridgeSession(sessionId: string): Promise<void> {
@@ -1067,7 +1055,7 @@ export class OfflineError extends Error {
 /**
  * Stable, long-lived public client. The Provider instantiates ONE per
  * app lifetime and consumers bind to it; the underlying `Transport`
- * comes and goes on WebRTC reconnects without changing this object's
+ * comes and goes on transport reconnects without changing this object's
  * identity.
  *
  * Why this layer exists:

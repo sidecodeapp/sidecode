@@ -39,10 +39,10 @@ import {
 export default function SettingsHostScreen() {
   const { paired, unpair, connectionStatus, client } = useDaemonClient();
 
-  // Phase-4 measurement panel: poll live wire diagnostics while this
-  // screen is up. 1s is fast enough to watch a QUIC path migrate
-  // during a roaming test, cheap enough to not matter (iroh samples
-  // are synchronous FFI reads; WebRTC returns a constant).
+  // Measurement panel: poll live wire diagnostics while this screen is
+  // up. 1s is fast enough to watch a QUIC path migrate during a
+  // roaming test, cheap enough to not matter (samples are synchronous
+  // FFI reads).
   const [diag, setDiag] = useState<TransportDiagnostics | null>(null);
   useEffect(() => {
     const sample = () => setDiag(client.transportDiagnostics());
@@ -109,11 +109,7 @@ export default function SettingsHostScreen() {
           <Section title="Connection">
             <InfoRow label="Transport">
               <Text modifiers={[foregroundStyle("#8E8E93")]}>
-                {diag === null
-                  ? "—"
-                  : diag.kind === "iroh"
-                    ? "iroh"
-                    : "WebRTC"}
+                {diag === null ? "—" : diag.kind}
               </Text>
             </InfoRow>
             <InfoRow label="Connected in">
