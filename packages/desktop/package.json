@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
-  "description": "Thinkite desktop GUI \u2014 Electron + Vite + React 19 + Astryx",
+  "description": "Thinkite desktop GUI — Electron + Vite + React 19 + Astryx",
   "author": "thinkite",
   "type": "module",
   "os": [
@@ -19,15 +19,15 @@
     "package:publish": "set -a; . ./.env.local 2>/dev/null || true; set +a; bun run --cwd ../protocol build && bun run --cwd ../daemon build && vite build && electron-builder --mac --arm64 --publish always"
   },
   "dependencies": {
-    "@astryxdesign/core": "^0.1.6",
-    "@astryxdesign/theme-neutral": "^0.1.6",
+    "@astryxdesign/core": "^0.3.0",
+    "@astryxdesign/theme-neutral": "^0.3.0",
     "@heroicons/react": "^2.2.0",
-    "@lydell/node-pty": "^1.2.0-beta.12",
+    "@lydell/node-pty": "^1.2.0-beta.15",
     "@pierre/diffs": "catalog:",
+    "@tanstack/react-db": "^0.1.92",
+    "@tanstack/react-router": "^1.170.25",
     "@thinkite/daemon": "workspace:*",
     "@thinkite/protocol": "workspace:*",
-    "@tanstack/react-db": "catalog:",
-    "@tanstack/react-router": "^1.170.17",
     "@xterm/addon-fit": "0.12.0-beta.290",
     "@xterm/addon-serialize": "0.15.0-beta.290",
     "@xterm/addon-unicode-graphemes": "0.5.0-beta.290",
@@ -37,23 +37,23 @@
     "qrcode": "^1.5.4",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "ws": "^8.21.1"
+    "ws": "^8.21.3"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.2",
-    "@tanstack/router-plugin": "^1.168.19",
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/router-plugin": "^1.168.29",
     "@types/node": "catalog:",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2",
     "@types/react-dom": "^19.2",
     "@types/ws": "^8.18.1",
-    "@vitejs/plugin-react": "^6.0.3",
-    "electron": "^43.1.1",
+    "@vitejs/plugin-react": "^6.0.5",
+    "electron": "^43.4.0",
     "electron-builder": "27.0.0-alpha.6",
     "tailwindcss": "catalog:",
     "typescript": "^7.0.2",
-    "vite": "^8.1.2",
-    "vite-plugin-electron": "^1.1.0"
+    "vite": "^8.2.1",
+    "vite-plugin-electron": "^1.1.1"
   },
   "main": "dist-electron/index.js"
 }
