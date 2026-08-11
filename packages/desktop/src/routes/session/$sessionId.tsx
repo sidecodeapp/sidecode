@@ -18,9 +18,9 @@ import {
   CommandLineIcon,
   DocumentPlusIcon,
 } from "@heroicons/react/24/outline";
-import { MODELS, prettyModel } from "@thinkite/protocol";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { MODELS, prettyModel } from "@thinkite/protocol";
 import { useState } from "react";
 import { DiffPanel } from "../../components/DiffPanel";
 import { TerminalPane } from "../../components/TerminalPane";

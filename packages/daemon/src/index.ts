@@ -13,6 +13,7 @@ import { deleteDaemonLock, writeDaemonLock } from "./daemon-lock.ts";
 import { GitWatcherRegistry } from "./git-watch.ts";
 import { resolveThinkiteHome } from "./home.ts";
 import { loadOrCreateIdentity } from "./identity.ts";
+import { IrohPeerServer } from "./iroh-peer-server.ts";
 import { KnownClients } from "./known-clients.ts";
 import {
   createLocalConnection,
@@ -31,7 +32,6 @@ import {
   listSidecodeSessions,
   writeBridgeWorkerState,
 } from "./sidecode-sessions.ts";
-import { IrohPeerServer } from "./iroh-peer-server.ts";
 
 export interface DaemonOptions {
   /** Override THINKITE_HOME. */
@@ -472,7 +472,9 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   // recognized as stale.
   process.on("exit", () => deleteDaemonLock(home));
 
-  console.log(`thinkite daemon (protocol ${PROTOCOL_VERSION}) — iroh listener starting`);
+  console.log(
+    `thinkite daemon (protocol ${PROTOCOL_VERSION}) — iroh listener starting`,
+  );
   console.log(`fingerprint: ${identity.fingerprint}`);
   console.log(`paired clients: ${knownClients.list().length}`);
 

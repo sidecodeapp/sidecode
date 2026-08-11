@@ -1,3 +1,4 @@
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import {
   type CommandContext,
   DEFAULT_MODEL,
@@ -5,7 +6,6 @@ import {
   type ImageAttachment,
   MODELS,
 } from "@thinkite/protocol";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 import { ContextMenu, type MenuAction } from "@yyq1025/react-native-nitro-menu";
 import { GlassView } from "expo-glass-effect";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -195,6 +195,7 @@ export function InputBar({
     text: string,
     images: ImageAttachment[] | undefined,
     model: string,
+    // biome-ignore lint/suspicious/noConfusingVoidType: optional-return callback — `| undefined` would reject the void-returning handlers callers pass
   ) => boolean | void;
 }) {
   const { client, connectionStatus } = useDaemonClient();

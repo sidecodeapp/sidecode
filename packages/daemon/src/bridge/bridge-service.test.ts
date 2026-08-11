@@ -985,7 +985,7 @@ describe("BridgeService.reconnect — M3.5.3 unified entry", () => {
       persist: opts.persist ?? STUB_PERSIST,
       sdk: { fetchRemoteCredentials: fetchImpl },
       // No-op timers — proactive tests will inject their own.
-      setTimer: ((cb: () => void, _ms: number) => {
+      setTimer: ((_cb: () => void, _ms: number) => {
         return {} as ReturnType<typeof setTimeout>;
       }) as unknown as typeof setTimeout,
       clearTimer: () => {},

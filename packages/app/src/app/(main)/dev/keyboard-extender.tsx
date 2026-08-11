@@ -113,7 +113,7 @@ export default function KeyboardExtenderDevScreen() {
     const { start, end } = selection;
     const safeStart = Math.max(0, Math.min(start, text.length));
     const safeEnd = Math.max(safeStart, Math.min(end, text.length));
-    const next = text.slice(0, safeStart) + "/" + text.slice(safeEnd);
+    const next = `${text.slice(0, safeStart)}/${text.slice(safeEnd)}`;
     setText(next);
     const cursor = safeStart + 1;
     setSelection({ start: cursor, end: cursor });

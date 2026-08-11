@@ -1,10 +1,10 @@
-import type { TurnUsage } from "@thinkite/protocol";
 import {
   createCollection,
   eq,
   localOnlyCollectionOptions,
   useLiveQuery,
 } from "@tanstack/react-db";
+import type { TurnUsage } from "@thinkite/protocol";
 
 /**
  * Per-session "latest turn result" — the transcript-derived bits that

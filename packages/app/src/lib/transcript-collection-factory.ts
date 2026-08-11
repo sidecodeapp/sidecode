@@ -1,9 +1,9 @@
-import type { ImageAttachment, TimelineItem } from "@thinkite/protocol";
 import {
   type Collection,
   createCollection,
   createOptimisticAction,
 } from "@tanstack/react-db";
+import type { ImageAttachment, TimelineItem } from "@thinkite/protocol";
 import { type DaemonClient, daemonClient } from "@/lib/daemon-client";
 import {
   clearSessionTurnResult,

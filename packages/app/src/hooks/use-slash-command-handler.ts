@@ -70,12 +70,11 @@ export type SlashCommandHandlerOpts =
       ) => void;
     };
 
-export function useSlashCommandHandler(
-  opts: SlashCommandHandlerOpts,
-): (
+export function useSlashCommandHandler(opts: SlashCommandHandlerOpts): (
   text: string,
   images: ImageAttachment[] | undefined,
   model: string,
+  // biome-ignore lint/suspicious/noConfusingVoidType: must stay assignable to InputBar's `boolean | void` onSend slot
 ) => boolean | void {
   const router = useRouter();
   const { context, onPassthrough } = opts;

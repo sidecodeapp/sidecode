@@ -48,9 +48,7 @@ describe("encodeWireFrame / decode*", () => {
   });
 
   it("rejects a truncated header", () => {
-    expect(() => decodeWireFrameLength(new Uint8Array(3))).toThrow(
-      /truncated/,
-    );
+    expect(() => decodeWireFrameLength(new Uint8Array(3))).toThrow(/truncated/);
   });
 
   it("rejects a zero-length payload", () => {

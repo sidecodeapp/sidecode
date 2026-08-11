@@ -1,9 +1,4 @@
-import type {
-  BiStream,
-  Connection,
-  Endpoint,
-  Incoming,
-} from "@number0/iroh";
+import type { BiStream, Connection, Endpoint, Incoming } from "@number0/iroh";
 import {
   type ClientFrame,
   type Command,

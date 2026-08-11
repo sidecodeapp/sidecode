@@ -1,7 +1,4 @@
-import {
-  decodePairOfferPayload,
-  PAIR_OFFER_VERSION,
-} from "@thinkite/protocol";
+import { decodePairOfferPayload, PAIR_OFFER_VERSION } from "@thinkite/protocol";
 import { describe, expect, it } from "vitest";
 import type { Identity } from "./identity.ts";
 import { createPairOffer } from "./pairing.ts";

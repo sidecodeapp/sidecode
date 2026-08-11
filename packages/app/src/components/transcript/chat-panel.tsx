@@ -6,7 +6,6 @@ import {
   useKeyboardScrollToEnd,
 } from "@legendapp/list/keyboard";
 import type { LegendListRef } from "@legendapp/list/react-native";
-import type { ImageAttachment } from "@thinkite/protocol";
 import {
   type Collection,
   eq,
@@ -14,6 +13,7 @@ import {
   useLiveQueryEffect,
 } from "@tanstack/react-db";
 import { useQueryClient } from "@tanstack/react-query";
+import type { ImageAttachment } from "@thinkite/protocol";
 import * as Crypto from "expo-crypto";
 import { useHeaderHeight } from "expo-router/react-navigation";
 import { useCallback, useEffect, useRef, useState } from "react";

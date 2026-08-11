@@ -2,11 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  type BiStream,
-  Endpoint,
-  EndpointAddr,
-} from "@number0/iroh";
+import { type BiStream, Endpoint, EndpointAddr } from "@number0/iroh";
 import {
   type Command,
   type DaemonFrame,
@@ -92,7 +88,10 @@ function dialAddr(server: IrohPeerServer): EndpointAddr {
   return new EndpointAddr(addr.id(), null, [...direct, ...loopback]);
 }
 
-function sendFrame(bi: BiStream, frame: Record<string, unknown>): Promise<void> {
+function sendFrame(
+  bi: BiStream,
+  frame: Record<string, unknown>,
+): Promise<void> {
   return bi.send.writeAll(Array.from(encodeWireFrame(JSON.stringify(frame))));
 }
 
@@ -248,9 +247,7 @@ describe("IrohPeerServer", () => {
     expect(seen[0]).toMatchObject({ type: "getFilesystemRoots" });
 
     conn.close(0n, []);
-    await expect
-      .poll(() => disconnected, { timeout: 5000 })
-      .toBe(true);
+    await expect.poll(() => disconnected, { timeout: 5000 }).toBe(true);
     expect(h.server.authenticatedCount()).toBe(0);
   });
 
@@ -288,8 +285,8 @@ describe("IrohPeerServer", () => {
     const reply = await readFrame(bi);
     expect(reply).toMatchObject({ type: "error", requestId: "big" });
     expect((reply as { message: string }).message).toHaveLength(200_000);
-    expect(
-      (captured as unknown as { text: string } | null)?.text,
-    ).toBe(bigPrompt);
+    expect((captured as unknown as { text: string } | null)?.text).toBe(
+      bigPrompt,
+    );
   });
 });

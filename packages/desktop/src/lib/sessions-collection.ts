@@ -1,5 +1,5 @@
-import type { SessionState } from "@thinkite/protocol";
 import { createCollection } from "@tanstack/react-db";
+import type { SessionState } from "@thinkite/protocol";
 import { daemonRpc } from "./daemon-rpc";
 
 /**

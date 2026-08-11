@@ -120,7 +120,8 @@ function utf8Encode(s: string): Uint8Array {
 }
 
 function utf8Decode(bytes: Uint8Array): string {
-  if (typeof TextDecoder !== "undefined") return new TextDecoder().decode(bytes);
+  if (typeof TextDecoder !== "undefined")
+    return new TextDecoder().decode(bytes);
   return utf8DecodeFallback(bytes);
 }
 

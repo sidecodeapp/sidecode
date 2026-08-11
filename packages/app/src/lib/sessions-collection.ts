@@ -1,5 +1,5 @@
-import type { ImageAttachment, SessionState } from "@thinkite/protocol";
 import { createCollection, createOptimisticAction } from "@tanstack/react-db";
+import type { ImageAttachment, SessionState } from "@thinkite/protocol";
 import { daemonClient } from "@/lib/daemon-client";
 
 /**

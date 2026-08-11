@@ -1,9 +1,9 @@
-import type { TimelineItem } from "@thinkite/protocol";
 import {
   type Collection,
   createCollection,
   createOptimisticAction,
 } from "@tanstack/react-db";
+import type { TimelineItem } from "@thinkite/protocol";
 import { daemonRpc } from "./daemon-rpc";
 
 // Per-session live transcript collections — the desktop port of iOS's
