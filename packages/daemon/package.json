@@ -34,7 +34,6 @@
     "@number0/iroh": "^1.1.0",
     "@thinkite/protocol": "workspace:*",
     "diff": "^9.0.0",
-    "node-datachannel": "^0.32.3",
     "p-limit": "^7.3.0",
     "partysocket": "^1.1.19",
     "qrcode": "^1.5.4",

@@ -3,7 +3,7 @@
  * needs for `createCodeSession` / `fetchRemoteCredentials` (and that the
  * OAuthRefreshManager rotates).
  *
- * WHY this exists (the daemon's pure-WebRTC path doesn't touch credentials —
+ * WHY this exists (the daemon's pure-P2P path doesn't touch credentials —
  * it delegates auth entirely to the spawned `claude` binary). The bridge
  * control-plane calls are direct HTTP from the daemon, so they need the
  * token in-hand. The `claude` binary refreshes the keychain token on use,

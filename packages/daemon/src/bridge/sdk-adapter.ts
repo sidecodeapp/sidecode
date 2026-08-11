@@ -181,7 +181,7 @@ export interface DeleteCodeSessionParams {
  * `DELETE {baseUrl}/v1/code/sessions/{cseId}` — HARD-delete the cloud cse_
  * (the "downgrade / make private" teardown). The session vanishes from
  * claude.ai; the LOCAL `<cliSessionId>.jsonl` is a separate store and is
- * untouched, so the sidecode session continues as a pure WebRTC session.
+ * untouched, so the sidecode session continues as a pure P2P session.
  *
  * Unlike create/fetch/attach this is NOT an SDK function — the `/bridge`
  * subpath exposes no delete — so it's a raw HTTP call. Kept here so all CCR

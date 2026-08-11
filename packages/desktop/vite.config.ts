@@ -7,7 +7,7 @@ import pkg from "./package.json" with { type: "json" };
 
 // Anything resolved through `dependencies` is left as a runtime require()
 // instead of being inlined into dist-electron/index.js (menubar's recipe).
-// Native modules (@lydell/node-pty, node-datachannel via the daemon) must
+// Native modules (@lydell/node-pty, @number0/iroh via the daemon) must
 // NOT be bundled — the bundler rewrites the .node require path and the
 // binary can't be found. External-by-name is also the property that lets a
 // daemon rebuild land without re-bundling the desktop main, and bun's

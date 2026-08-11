@@ -179,15 +179,15 @@ async function claudeVersion(
 }
 
 // ─── In-process daemon (D2): this process IS the sidecode daemon ───────────
-// Same identity, same ~/.sidecode home, same signaling presence the iOS app
+// Same identity, same ~/.sidecode home, same iroh endpoint the iOS app
 // pairs against. `start()` only writes the liveness lock, so check it first:
 // if another daemon owns the home (e.g. the menubar app), the GUI keeps
 // working in local-only mode (PTY/diff don't need the daemon; sessions +
-// transcripts do) rather than fighting over signaling with a twin identity.
+// transcripts do) rather than publishing a twin identity to discovery.
 //
 // The daemon is external in the main bundle, resolved from node_modules at
 // runtime — a daemon rebuild needs no desktop re-bundle. Packaged builds
-// revisit this in S3 (bundle + stage node-datachannel, the electrobun
+// revisit this in S3 (bundle + stage @number0/iroh, the electrobun
 // recipe carried over).
 let daemon: Daemon | null = null;
 {

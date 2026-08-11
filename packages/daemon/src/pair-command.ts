@@ -12,7 +12,8 @@ import { createPairOffer } from "./pairing.ts";
  * running `sidecode up` daemon via $THINKITE_HOME/daemon.lock, and prints
  * a fresh pair.offer for it. Does NOT spawn a server of its own — safe
  * to run multiple times. The offer is just `daemonIdentityPublicKey +
- * serviceName`; the signaling worker handles discovery; admission of
+ * serviceName`; iroh discovery (pkarr) resolves the pubkey to a dialable
+ * endpoint; admission of
  * unknown pubkeys is gated by the daemon's pair-window flag (set when
  * the menubar Pair window is open).
  */

@@ -32,14 +32,10 @@ import {
   writeBridgeWorkerState,
 } from "./sidecode-sessions.ts";
 import { IrohPeerServer } from "./iroh-peer-server.ts";
-import { WebRTCPeerServer } from "./webrtc-peer.ts";
 
 export interface DaemonOptions {
   /** Override THINKITE_HOME. */
   homeDir?: string;
-  /** Override signaling host (for `wrangler dev`). */
-  signalingHost?: string;
-  signalingScheme?: "ws" | "wss";
   /**
    * Absolute path to the bundled `claude` SEA binary to spawn. The Electron
    * host (menubar) computes this because it owns packaging: in the packaged
@@ -75,7 +71,7 @@ export interface Daemon {
   readonly fingerprint: string;
   /** Number of paired clients in known_clients.json (snapshot). */
   pairedClientCount(): number;
-  /** Number of currently authenticated WebRTC peers. */
+  /** Number of currently authenticated remote peers. */
   authenticatedPeerCount(): number;
   /**
    * Mint a fresh pair offer pointing at this daemon. Pure: derived from the
@@ -119,7 +115,7 @@ export interface Daemon {
   fetchPlanUsage(): Promise<PlanUsageResult>;
   /**
    * Open an in-process client connection to the command router — the same
-   * RPC surface WebRTC peers get (sendPrompt, subscribe, subscribeSessions,
+   * RPC surface remote peers get (sendPrompt, subscribe, subscribeSessions,
    * …), minus pairing/auth: the caller is the host process, already inside
    * the trust boundary. One connection per client socket; `close()` fires
    * the router's per-connection cleanups and must be called when the
@@ -148,9 +144,9 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   process.env.CLAUDE_CODE_ENTRYPOINT ??= "remote_mobile";
 
   // Pair-window admission gate. The menubar flips this via `setPairing` on
-  // the Pair window's open/close; `WebRTCPeerServer.isPairing` reads it on
-  // every `peer.joined`. Closed by default — the window must be open for an
-  // unknown pubkey to be admitted.
+  // the Pair window's open/close; `IrohPeerServer.isPairing` reads it on
+  // every incoming connection. Closed by default — the window must be open
+  // for an unknown pubkey to be admitted.
   //
   // THINKITE_PAIRING_OPEN=1 forces the gate open for the whole daemon
   // lifetime — dev/CLI affordance for pairing a fresh device when the
@@ -278,7 +274,7 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
     //      which handleResultEnvelope swallows when this flag is set so it
     //      isn't surfaced as a spurious turn_failed.
     //   2. await query.interrupt().
-    //   3. addEvent({ kind: "turn_canceled" }) — so WebRTC subscribers see
+    //   3. addEvent({ kind: "turn_canceled" }) — so remote subscribers see
     //      the cancel immediately. NOT mirrored to bridge (not in
     //      forwardToBridge allowlist), which is correct: claude.ai initiated
     //      the interrupt + SDK already auto-sent control_response:success;
@@ -402,29 +398,15 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
     epoch,
   });
 
-  // Live in-process client connections (deno desktop GUI sockets). Tracked
-  // so stop() can fire their router cleanups alongside the WebRTC peers'.
+  // Live in-process client connections (desktop GUI sockets). Tracked
+  // so stop() can fire their router cleanups alongside the iroh peers'.
   const localConnections = new Set<LocalConnection>();
 
-  const webrtc = new WebRTCPeerServer({
-    identity,
-    knownClients,
-    commandHandler,
-    isPairing: () => pairingOpen,
-    signalingHost: options.signalingHost,
-    signalingScheme: options.signalingScheme,
-    log: (event, data) =>
-      console.log(
-        `[sidecode] ${event}${data ? ` ${JSON.stringify(data)}` : ""}`,
-      ),
-  });
-  webrtc.start();
-
-  // iroh listener (phase 3) — same identity, same known_clients gate,
-  // same commandHandler; runs alongside WebRTC. No client traffic
-  // arrives here until the app's dev toggle dials it, so always-on is
-  // additive. Failure to load the napi binding (or to bind) degrades to
-  // a log line — WebRTC remains the default path either way.
+  // The remote transport: iroh QUIC listener on the pairing identity
+  // (EndpointId == pairing pubkey). Failure to load the napi binding
+  // (or to bind) degrades to a log line rather than crashing — the
+  // desktop GUI still works over the in-process surface — but remote
+  // clients can't connect until the daemon restarts cleanly.
   const iroh = new IrohPeerServer({
     identity,
     knownClients,
@@ -437,7 +419,7 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   });
   void iroh.start().catch((err: unknown) => {
     console.log(
-      `[sidecode] iroh.unavailable ${
+      `[sidecode] iroh.unavailable — remote clients cannot connect: ${
         err instanceof Error ? err.message : String(err)
       }`,
     );
@@ -453,7 +435,7 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   // claude.ai messages.
   //
   // No `await` here: a serial multi-session probe could take several
-  // seconds and we want the WebRTC peer server to start accepting iOS
+  // seconds and we want the iroh listener to start accepting iOS
   // connections immediately. Errors within a single session don't propagate
   // out of the orchestrator (each session is independently classified +
   // logged); the overall promise should not reject under normal conditions.
@@ -490,17 +472,14 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
   // recognized as stale.
   process.on("exit", () => deleteDaemonLock(home));
 
-  console.log(
-    `thinkite daemon (protocol ${PROTOCOL_VERSION}) connecting to signaling.thinkite.dev`,
-  );
+  console.log(`thinkite daemon (protocol ${PROTOCOL_VERSION}) — iroh listener starting`);
   console.log(`fingerprint: ${identity.fingerprint}`);
   console.log(`paired clients: ${knownClients.list().length}`);
 
   return {
     fingerprint: identity.fingerprint,
     pairedClientCount: () => knownClients.list().length,
-    authenticatedPeerCount: () =>
-      webrtc.authenticatedCount() + iroh.authenticatedCount(),
+    authenticatedPeerCount: () => iroh.authenticatedCount(),
     fetchPlanUsage: createPlanUsageFetcher(oauth),
     createPairOffer: (serviceName) => {
       const { encoded } = createPairOffer(identity, serviceName);
@@ -544,15 +523,14 @@ export async function start(options: DaemonOptions = {}): Promise<Daemon> {
       // bridge + clearTimeout); no await needed.
       bridgeService.shutdown();
       // Release fs.watch handles + cached SimpleGit instances; safe to
-      // call before or after webrtc.stop(), no interaction with peers.
+      // call before or after iroh.stop(), no interaction with peers.
       gitWatchers.disposeAll();
       deleteDaemonLock(home);
-      // Same point in the order as the WebRTC peers below: queries are
+      // Same point in the order as the iroh peers below: queries are
       // already drained, so these just run the (idempotent) subscription
       // cleanups. Copy first — close() mutates the set via connectLocal's
       // wrapper.
       for (const conn of [...localConnections]) conn.close();
-      await webrtc.stop();
       await iroh.stop();
       console.log("sidecode daemon stopped");
     },

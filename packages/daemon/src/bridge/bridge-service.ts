@@ -1029,7 +1029,7 @@ export class BridgeService {
    * `deleteCodeSession` on the now-orphaned cse_ so it vanishes from claude.ai.
    *
    * If the cloud delete fails (network / no org uuid) the local downgrade still
-   * holds: the session continues PURE (local JSONL untouched, runtime + WebRTC
+   * holds: the session continues PURE (local JSONL untouched, runtime + P2P
    * unaffected) and the worker state is already cleared, so the daemon won't
    * re-bridge it; the cse_ just lingers as a `disconnected` session on
    * claude.ai the user can delete there. Never throws, never blocks the local

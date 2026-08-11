@@ -360,8 +360,8 @@ export function ensureSessionLoop(
         // turn-boundary JSONL re-read is gone (continuous fold replaced it).
         handleSdkMessage(runtime, state, msg);
         // Parallel derivation: fork the SAME raw SDKMessage to the CCR
-        // bridge mirror (no-op for pure WebRTC sessions). Pillar path
-        // (enriched → WebRTC) runs first; the mirror is best-effort.
+        // bridge mirror (no-op for pure P2P sessions). Pillar path
+        // (enriched → remote peers) runs first; the mirror is best-effort.
         forwardToBridge(runtime, msg);
       }
     } catch (err) {

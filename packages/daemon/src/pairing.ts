@@ -9,7 +9,7 @@ import type { Identity } from "./identity.ts";
  * Pair-offer construction — pure over the daemon's identity + a
  * serviceName label. The QR carries just `daemonIdentityPublicKey +
  * serviceName`; admission of unknown pubkeys at connect time is gated
- * separately by the pair-window flag in WebRTCPeerServer.
+ * separately by the pair-window flag in IrohPeerServer.
  */
 export interface PairOfferResult {
   /** Base64url-encoded `pair.offer` payload — what goes into the QR. */

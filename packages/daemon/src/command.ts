@@ -4,7 +4,7 @@ import type { Command, DaemonFrame } from "@thinkite/protocol";
  * Per-peer dispatch context handed to every command handler invocation.
  * The handler uses `send` to push responses or events back to this peer.
  *
- * Transport-agnostic: WebRTCPeerServer (V0) and the legacy WebSocket
+ * Transport-agnostic: IrohPeerServer and the in-process
  * server (deleted) both produce the same shape. Lives in its own module
  * so the router doesn't import the transport, and the transport doesn't
  * import the router.

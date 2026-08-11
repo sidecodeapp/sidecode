@@ -8,7 +8,7 @@ import type { CommandContext, CommandHandler } from "./command.ts";
 
 /**
  * In-process transport for the daemon's command router — the local
- * counterpart of WebRTCPeerServer's per-peer dispatch. A host that embeds
+ * counterpart of IrohPeerServer's per-peer dispatch. A host that embeds
  * the daemon (deno desktop) creates one connection per GUI socket and pipes
  * raw message text in; frames flow back through `send`.
  *

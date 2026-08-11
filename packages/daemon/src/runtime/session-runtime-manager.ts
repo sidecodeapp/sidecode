@@ -358,7 +358,7 @@ export class SessionRuntimeManager<T> {
    *     `subscribeSessions.response.initial` so the iOS TanStack DB
    *     collection seeds without a separate listSessions RPC.
    *   - `unsubscribe`: idempotent closure to detach the listener (used
-   *     by router on WebRTC peer disconnect).
+   *     by router on remote peer disconnect).
    *
    * The listener fires synchronously from inside notifyStateChanged. A
    * throwing listener is caught + isolated so a buggy iOS subscriber

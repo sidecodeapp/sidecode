@@ -448,7 +448,7 @@ export class BridgeTransport implements RuntimeBridge {
           historical: true,
         } as unknown as Parameters<BridgeSessionHandle["write"]>[0]);
       } catch {
-        // skip one bad message — mirror degrades, never the pillar/WebRTC path.
+        // skip one bad message — mirror degrades, never the pillar/P2P path.
       }
     }
     await this.handle.flush();

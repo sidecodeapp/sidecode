@@ -11,7 +11,7 @@ import {
 
 // WebSocket client for the daemon's /rpc bridge — the local counterpart of
 // iOS's daemon-client.ts, minus everything transport-establishment
-// (signaling, pairing, WebRTC, version gating): the daemon lives in the
+// (iroh dial, pairing, version gating): the daemon lives in the
 // server process this page was served from, so "connect" is one ws() call
 // and the protocol package on both ends is the same import.
 //

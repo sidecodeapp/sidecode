@@ -23,29 +23,26 @@ import { fingerprintFromPubkeyB64, seedFromPrivateKey } from "./identity.ts";
 import type { KnownClients } from "./known-clients.ts";
 
 /**
- * iroh QUIC transport — phase 3 of the iroh integration. Runs ALONGSIDE
- * WebRTCPeerServer on the same daemon identity (an iroh endpoint hosts
- * many ALPNs; this one owns `thinkite/rpc/1`, the echo probe keeps its
- * own). WebRTC stays the default client path; the app dials this one
- * behind a dev toggle until the cutover decision.
- *
- * Everything the WebRTC path built out-of-band comes free here:
+ * The daemon's remote transport: an iroh QUIC listener on the daemon
+ * identity (an iroh endpoint hosts many ALPNs; this one owns
+ * `thinkite/rpc/1`, the echo probe keeps its own). Everything the
+ * retired WebRTC path built out-of-band comes free here:
  *
  *   - Identity: the QUIC handshake proves possession of the ed25519 key
- *     whose pubkey IS the EndpointId (phase 2 validated EndpointId ==
- *     pairing pubkey byte-for-byte). No signaling worker, no DTLS
- *     fingerprint signing dance — `conn.remoteId()` is authenticated by
- *     the transport itself.
+ *     whose pubkey IS the EndpointId (validated EndpointId == pairing
+ *     pubkey byte-for-byte). No signaling worker, no DTLS fingerprint
+ *     signing dance — `conn.remoteId()` is authenticated by the
+ *     transport itself.
  *   - Admission: `remoteId` is matched against known_clients right after
  *     the handshake; unknown ids are admitted only while the pair window
- *     is open (same `isPairing` gate as WebRTC).
+ *     is open (`isPairing` gate).
  *   - Framing: one client-opened bi-stream per connection carries
  *     length-prefixed JSON frames (see protocol/wire-frame.ts). No SCTP
  *     message cap → no chunking envelopes on this path.
  *
- * The hello/server_info wire-version handshake is copied unchanged from
- * WebRTCPeerServer — same frames, same `isProtocolCompatible` rule — so
- * the app's RPC layer sees an identical protocol regardless of transport.
+ * The hello/server_info wire-version handshake carried over unchanged
+ * from the WebRTC era — same frames, same `isProtocolCompatible` rule —
+ * so the app's RPC layer never noticed the transport swap.
  */
 
 /** QUIC application close codes (u62, surfaced to the peer). */
@@ -57,7 +54,7 @@ const CLOSE_PROTOCOL_ERROR = 2n;
  * Max time from connection-accepted to hello-verified. The QUIC
  * handshake is already done by accept time, so this only bounds a peer
  * that connects and then stalls before opening the RPC stream or
- * sending `hello` — much tighter than WebRTC's 30s setup budget.
+ * sending `hello`.
  */
 const HELLO_TIMEOUT_MS = 10_000;
 
@@ -65,12 +62,12 @@ export interface IrohPeerServerOptions {
   /** Daemon's long-lived ed25519 identity — doubles as the iroh secret
    *  key, so the EndpointId clients dial IS the pairing pubkey. */
   identity: Identity;
-  /** Same admission source of truth as the WebRTC path. */
+  /** Admission source of truth (known_clients.json). */
   knownClients: KnownClients;
   /** Invoked for each application command after the wire-version
-   *  handshake. Same contract as WebRTCPeerServer's. */
+   *  handshake. */
   commandHandler?: CommandHandler;
-  /** Pair-window gate for admitting unknown pubkeys (see WebRTC twin). */
+  /** Pair-window gate for admitting unknown pubkeys. */
   isPairing?: () => boolean;
   /**
    * Endpoint preset. "n0" (default) = production relays + pkarr
@@ -128,7 +125,7 @@ export class IrohPeerServer {
    * loop continues in the background). The napi binding is imported
    * lazily so a missing/broken native module degrades to "iroh listener
    * unavailable" instead of failing daemon boot — the caller logs the
-   * rejection and the WebRTC path carries on.
+   * rejection; the desktop GUI still works over the in-process surface.
    */
   async start(): Promise<void> {
     if (this.endpoint) throw new Error("IrohPeerServer already started");
@@ -321,13 +318,13 @@ export class IrohPeerServer {
         fingerprint: slot.fingerprint,
         error: (err as Error).message,
       });
-      // Same policy as WebRTC: a malformed frame from an authenticated
+      // Malformed-frame policy: a malformed frame from an authenticated
       // peer is more likely a bug than an attack — don't kill the
       // channel. (Framing stays intact; only the JSON was bad.)
       return;
     }
 
-    // ── Wire-version handshake gate (copied from WebRTCPeerServer) ──
+    // ── Wire-version handshake gate (carried over from the WebRTC era) ──
     if (frame.type === "hello") {
       if (slot.versionVerified) return; // re-hello: ignore
       if (!isProtocolCompatible(frame.protocolVersion)) {

@@ -42,8 +42,7 @@
     "react-dom": "19.2.3"
   },
   "trustedDependencies": [
-    "electron",
-    "node-datachannel"
+    "electron"
   ],
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",

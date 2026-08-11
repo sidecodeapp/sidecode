@@ -12,8 +12,8 @@ import { join } from "node:path";
  * that one-shot CLI commands (notably `sidecode pair`) can detect it and
  * refuse to spawn a competing one.
  *
- * Post-WebRTC pivot, host/port are gone — the daemon doesn't bind a
- * local port; all transport goes through signaling.thinkite.dev + WebRTC.
+ * The daemon doesn't bind a local port — remote transport is the iroh
+ * endpoint (relays + pkarr discovery + direct QUIC paths).
  * The lock is now just a liveness record (PID + startedAt).
  *
  * The lock is best-effort: written on start, deleted on graceful stop.

@@ -200,7 +200,7 @@ export class SessionRuntime<T> {
   /** Promise that resolves when F2's consumer loop exits (graceful close, error, or natural end-of-iterator). Null when no loop is active. F3's daemon shutdown awaits this per runtime. */
   loopPromise: Promise<void> | null = null;
 
-  /** CCR bridge mirror slot (slice M1). Null = pure session (WebRTC only).
+  /** CCR bridge mirror slot (slice M1). Null = pure session (P2P only).
    *  Set by BridgeTransport.attach, cleared by its detach — NOT by the query
    *  loop's finally (a bridge must outlive an idle lazy query). When non-null,
    *  the consumer loop forwards each raw SDKMessage here, and pushPrompt
