@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/2c0ddbf5-c364-4b09-a652-70e64ad2fbcf
 
 **Thinkite lets you start, stream, and steer Claude Code sessions on your Mac from your phone.**
 A lightweight daemon on your Mac orchestrates the sessions; the iOS app connects to it **directly,
-peer-to-peer** over a WebRTC link, so your prompts, responses, and diffs stream straight between
+peer-to-peer** over an iroh QUIC link, so your prompts, responses, and diffs stream straight between
 your own devices — no third-party server can read your session data.
 
 ---
@@ -26,9 +26,10 @@ your own devices — no third-party server can read your session data.
 
 - **Start sessions from your phone** — pick any folder on your Mac and kick off a fresh
   Claude Code session remotely. You don't have to be at your desk to begin.
-- **Peer-to-peer & private** — session traffic flows device-to-device over a DTLS-encrypted
-  WebRTC DataChannel. A Cloudflare TURN relay is used only as a NAT fallback, and even then
-  it only ever forwards already-encrypted bytes.
+- **Peer-to-peer & private** — session traffic flows device-to-device over an end-to-end
+  encrypted QUIC connection ([iroh](https://www.iroh.computer/)), roaming seamlessly between
+  Wi-Fi and cellular. A public relay is used only as a NAT fallback, and even then it only
+  ever forwards already-encrypted bytes.
 - **Bridge to the cloud, on demand** — keep a session private P2P, or flip a single session to
   also mirror onto **claude.ai and Claude Desktop** for cross-client control — then flip it back.
   Your choice, per session.
@@ -46,31 +47,29 @@ your own devices — no third-party server can read your session data.
                   QR pair (Ed25519 pubkey, out-of-band trust root)
    ┌──────────────┐ ──────────────────────────────────────────► ┌─────────────────────┐
    │   iOS app    │                                              │     macOS daemon     │
-   │  (Expo / RN) │ ◄════════ WebRTC DataChannel (P2P) ════════► │   (Node + TS)        │
-   └──────┬───────┘             DTLS, end-to-end                 │   orchestrates       │
-          │                                                      │   Claude Code via    │
-          │                                                      │   the Agent SDK      │
-          ▼                                                      └─────────────────────┘
-   ┌────────────────────────────────┐
-   │ Cloudflare Worker + Durable     │ ──── SDP/ICE signaling + TURN NAT fallback ────►
-   │ Object  (connection broker)     │      (brokers the handshake only; never sees
-   └────────────────────────────────┘       your session data)
+   │  (Expo / RN) │ ◄═════════ iroh QUIC (P2P, e2e) ═══════════► │   (Node + TS)        │
+   └──────────────┘   dial by pubkey; direct paths preferred,    │   orchestrates       │
+                      public relays only when NAT wins           │   Claude Code via    │
+                                                                 │   the Agent SDK      │
+                                                                 └─────────────────────┘
 ```
 
 The Mac **daemon** is the orchestration layer: it spawns and supervises Claude Code via the
 Claude Agent SDK, manages session lifecycle, and exposes sessions to paired clients over a
-typed wire protocol. The **iOS app** is a thin, real-time client. A **Cloudflare Worker +
-Durable Object** brokers the initial WebRTC handshake (and provides a TURN fallback), then
-steps out of the way — application traffic is peer-to-peer.
+typed wire protocol. The **iOS app** is a thin, real-time client. The transport is
+[iroh](https://www.iroh.computer/): the daemon's Ed25519 pairing pubkey doubles as its QUIC
+endpoint ID, so the phone dials it directly — hole-punching upgrades to a direct path
+(seamless Wi-Fi ↔ cellular roaming via QUIC path migration), with public relays as an
+encrypted fallback.
 
 ### Under the hood
 
-- **Private by default, mirror on demand** — sessions run over a direct P2P WebRTC link; a bridged
+- **Private by default, mirror on demand** — sessions run over a direct P2P QUIC link; a bridged
   session tees the same event stream to Anthropic's cloud (claude.ai / Claude Desktop) without
   dropping it.
-- **Authenticated pairing** — pairing exchanges an Ed25519 public key via QR; the WebRTC DTLS
-  fingerprint is signed under that key, so even a compromised signaling server can't MITM the
-  connection.
+- **Authenticated pairing** — pairing exchanges an Ed25519 public key via QR; that key IS the
+  daemon's QUIC endpoint identity, so the TLS handshake itself proves you reached the machine
+  you paired with — there is no broker to MITM.
 - **Resumable protocol** — a cursor + epoch-fenced event stream lets reconnecting clients replay
   only missed events, with a full-snapshot fallback when the daemon restarts.
 - **Optimistic local state** — sessions and transcripts live in TanStack DB collections; writes
@@ -85,11 +84,11 @@ steps out of the way — application traffic is peer-to-peer.
 
 ## Security & privacy
 
-- **End-to-end encryption.** Session traffic rides a WebRTC DataChannel secured with DTLS,
-  encrypted between your two devices.
-- **The relay can't read your data.** The Cloudflare signaling server only brokers connection
-  setup (SDP/ICE); it is never in the data path. The TURN fallback only ever relays
-  already-encrypted bytes.
+- **End-to-end encryption.** Session traffic rides an iroh QUIC connection (TLS 1.3),
+  encrypted between your two devices; each side's Ed25519 key is verified in the handshake.
+- **The relay can't read your data.** When NAT blocks a direct path, iroh's public relays
+  forward already-encrypted QUIC packets; they are never able to decrypt them, and the
+  connection upgrades to a direct path when one appears.
 - **Your credentials stay on your Mac.** The daemon uses your existing Claude login from the
   system keychain. Thinkite never reads, stores, or transmits your tokens.
 
@@ -120,10 +119,9 @@ This is a bun monorepo:
 | Package | What it is |
 |---|---|
 | `packages/app` | iOS client — Expo / React Native |
-| `packages/daemon` | macOS daemon — wraps the Claude Agent SDK, WebRTC peer, session orchestration, cloud bridge |
+| `packages/daemon` | macOS daemon — wraps the Claude Agent SDK, iroh peer server, session orchestration, cloud bridge |
 | `packages/desktop` | macOS desktop GUI — Electron + Vite + React, tray, terminal, pairing |
-| `packages/protocol` | Shared wire protocol — zod schemas, version negotiation, chunking |
-| `packages/signaling` | Cloudflare Worker + Durable Object signaling server |
+| `packages/protocol` | Shared wire protocol — zod schemas, version negotiation, wire framing |
 | `packages/website` | Landing page (Astro) |
 
 
@@ -152,7 +150,7 @@ cd packages/app && bun run ios
 
 ## Tech stack
 
-TypeScript · Node.js · React Native (Expo) · TanStack DB · WebRTC · Cloudflare Workers / Durable Objects ·
+TypeScript · Node.js · React Native (Expo) · TanStack DB · iroh (QUIC P2P) ·
 Claude Agent SDK · Electron · zod
 
 ---

@@ -10,7 +10,6 @@
       "packages/app",
       "packages/daemon",
       "packages/protocol",
-      "packages/signaling",
       "packages/website"
     ],
     "catalog": {

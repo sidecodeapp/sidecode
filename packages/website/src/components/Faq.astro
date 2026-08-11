@@ -6,7 +6,7 @@ const faqs = [
   },
   {
     q: "How private is it, really?",
-    a: "Your phone and Mac connect device-to-device over a DTLS-encrypted WebRTC DataChannel. A Cloudflare signaling server only brokers the initial handshake and never sees session content; when a direct link isn't possible, an encrypted TURN relay is the fallback.",
+    a: "Your phone and Mac connect device-to-device over an end-to-end encrypted QUIC connection (iroh). Whenever possible the traffic flows on a direct path between your devices; when NAT blocks that, a public relay forwards the packets — but they stay encrypted, and the relay can never read them.",
   },
   {
     q: "Do I need an account?",

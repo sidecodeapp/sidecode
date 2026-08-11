@@ -70,11 +70,9 @@ jobs:
       # shouldn't be blocked by the phone app's separately-pinned toolchain.
       - name: Typecheck + tests
         run: |
-          bun run --cwd packages/signaling cf-typegen # gitignored workerd types
           bun run --cwd packages/protocol typecheck
           bun run --cwd packages/daemon typecheck
           bun run --cwd packages/desktop typecheck
-          bun run --cwd packages/signaling typecheck
           bun run test
 
       # Pre-create the draft release BEFORE electron-builder runs. Its GitHub

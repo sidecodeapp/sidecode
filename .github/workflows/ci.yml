@@ -24,20 +24,13 @@ jobs:
       - name: biome
         run: bunx biome ci .
 
-      # worker-configuration.d.ts (workerd runtime globals: Env/Response/...)
-      # is gitignored as a regenerable artifact — generate it or the
-      # signaling typecheck has no runtime types.
-      - name: Generate workerd types (signaling)
-        run: bun run --cwd packages/signaling cf-typegen
-
       # Sequenced (tsc -b project refs: protocol before daemon), same chain
-      # as the root typecheck script, plus signaling (needs the step above).
+      # as the root typecheck script.
       - name: Typecheck (workspace)
         run: |
           bun run --cwd packages/protocol typecheck
           bun run --cwd packages/daemon typecheck
           bun run --cwd packages/desktop typecheck
-          bun run --cwd packages/signaling typecheck
 
       # Separate step: the app pins the expo-managed TS 6 (its own script
       # resolves the nested copy; the workspace chain above runs TS 7).
