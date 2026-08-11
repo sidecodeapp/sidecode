@@ -3,12 +3,6 @@ import { z } from "zod";
 import pkg from "../package.json" with { type: "json" };
 
 export {
-  type ChunkEnvelope,
-  ChunkReassembler,
-  chunkMessage,
-  isChunkEnvelope,
-} from "./chunking.ts";
-export {
   DEFAULT_MODEL,
   getDefaultModelId,
   MODEL_METADATA,
@@ -17,10 +11,6 @@ export {
   type ModelMetadata,
   prettyModel,
 } from "./models.ts";
-export {
-  dtlsFingerprintTranscript,
-  extractDtlsFingerprint,
-} from "./sdp-fingerprint.ts";
 export {
   decodeWireFrameLength,
   decodeWireFramePayload,
@@ -130,16 +120,15 @@ export function outdatedSide(remote: string): "local" | "remote" | null {
 
 // ─── Pair offer ────────────────────────────────────────────────────────────
 //
-// The QR carries just enough to wire up signaling + identity-verify the
-// daemon. Connection itself is WebRTC: client opens a SignalingClient to
-// the room named after `daemonIdentityPublicKey`, daemon's offer arrives
-// signed by the corresponding private key, client verifies fpSig against
-// the QR-known pubkey, DTLS binds the channel.
+// The QR carries just enough to dial + identity-verify the daemon.
+// Connection itself is iroh QUIC: `daemonIdentityPublicKey` IS the
+// daemon's iroh EndpointId, so the client dials it directly (relays +
+// pkarr discovery resolve it to reachable addresses) and the QUIC
+// handshake proves the daemon holds the matching private key.
 //
 // Two fields:
-//   - `daemonIdentityPublicKey` — base64url ed25519 raw pubkey. Doubles as
-//     the signaling room name AND the verification key for the daemon's
-//     SDP fingerprint signature. The 16-hex daemon fingerprint is
+//   - `daemonIdentityPublicKey` — base64url ed25519 raw pubkey ==
+//     iroh EndpointId. The 16-hex daemon fingerprint is
 //     `sha256(pubkey).slice(0,16)` — derived, not transmitted.
 //   - `serviceName` — `os.hostname()` snapshot for the iOS confirm UI.
 //
@@ -329,10 +318,10 @@ export type SessionState = z.infer<typeof sessionState>;
 
 /** Subscribe-once RPC: gets initial snapshot of ALL session states the
  *  daemon knows about + opens the stream for live `session_state_changed`
- *  / `session_state_removed` push envelopes. WebRTC channel close →
+ *  / `session_state_removed` push envelopes. Transport close →
  *  implicit unsubscribe via `ctx.onDisconnect` (router-side).
  *
- *  iOS calls this once per WebRTC connection (after pair + hello). The
+ *  iOS calls this once per connection (after pair + hello). The
  *  TanStack DB sync handler is the ONLY consumer; views read via
  *  `useLiveQuery`. */
 export const subscribeSessionsCommand = z.object({
@@ -390,9 +379,9 @@ export const sessionStateRemovedEvent = z.object({
  * compresses to JPEG (Opus 4.7 long edge 2576px), PNG slot exists for
  * future pasted-screenshot path that wants to preserve transparency.
  *
- * Wire size: a single 2576x1448 JPEG q0.85 ≈ 600KB-1MB base64. Chunking
- * protocol (chunking.ts) splits at 60K chars, so a typical image flows
- * as ~10-15 chunks over the DataChannel.
+ * Wire size: a single 2576x1448 JPEG q0.85 ≈ 600KB-1MB base64 — flows
+ * as one length-prefixed frame on the QUIC stream (wire-frame.ts; no
+ * message-size cap, 64MiB sanity limit).
  */
 export const imageAttachment = z.object({
   data: z.string(),
@@ -863,7 +852,7 @@ export type EventDelta = z.infer<typeof eventDelta>;
  * returns an EMPTY `settled[]` + `recovered: true`, then synchronously
  * replays events with cursor > sinceCursor (these arrive as `event`
  * frames AFTER the subscribe.response). Used by the facade on
- * WebRTC reconnect — client preserves its in-memory collection and
+ * transport reconnect — client preserves its in-memory collection and
  * only catches up on the gap.
  *
  * If the warm path can't be served (epoch mismatch from daemon
@@ -976,8 +965,8 @@ export const unsubscribeResponse = z.object({
  * `images` carries base64-encoded image attachments — daemon wraps these
  * into SDK content blocks (`{type:'image', source:{type:'base64', ...}}`)
  * and prepends them to the text block. Empty `text` is allowed when only
- * images are sent. The chunking layer (chunking.ts) splits large image
- * payloads across DataChannel frames; protocol consumers don't see chunks.
+ * images are sent. Large payloads ride a single length-prefixed wire
+ * frame (wire-frame.ts) — no chunking layer.
  *
  * `model` carries the input-bar picker's current selection, forwarded
  * to the SDK `query()` options on every send (NOT pinned per session —
@@ -1077,7 +1066,7 @@ export const bridgeSessionResponse = z.object({
 
 /**
  * CCR downgrade ("make private") — drop a bridged session's cloud mirror. The
- * daemon detaches locally (the session continues as a pure WebRTC session) and
+ * daemon detaches locally (the session continues as a pure P2P session) and
  * best-effort hard-deletes the cse_ on claude.ai. Idempotent: a session that
  * isn't bridged is a no-op success.
  */
@@ -1368,14 +1357,15 @@ export const errorFrame = z.object({
   protocolVersion: z.string().optional(),
 });
 
-// ─── Hello / server_info (wire-version handshake on DataChannel open) ─────
+// ─── Hello / server_info (wire-version handshake on stream open) ──────────
 //
-// iOS sends `hello` immediately after DC.open carrying its PROTOCOL_VERSION.
-// Daemon checks compatibility via `isProtocolCompatible` and responds with
-// its own `server_info` (or with `error{code:"incompatible_protocol",
-// protocolVersion}` + DC close on mismatch — the version lets iOS name
-// which side is outdated via `outdatedSide`). iOS treats `server_info` as
-// the "ready" signal — application commands may only flow after it arrives.
+// iOS sends `hello` as the first frame on the RPC stream carrying its
+// PROTOCOL_VERSION. Daemon checks compatibility via `isProtocolCompatible`
+// and responds with its own `server_info` (or with
+// `error{code:"incompatible_protocol", protocolVersion}` + close on
+// mismatch — the version lets iOS name which side is outdated via
+// `outdatedSide`). iOS treats `server_info` as the "ready" signal —
+// application commands may only flow after it arrives.
 //
 // Single field exchanged each way. There's no separate "app release
 // version" / "daemon release version" — the protocol package owns the

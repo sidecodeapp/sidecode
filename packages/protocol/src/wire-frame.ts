@@ -1,17 +1,16 @@
 /**
  * Length-prefix framing for the iroh QUIC transport.
  *
- * WebRTC DataChannel has message boundaries (SCTP), so the WebRTC path
- * sends bare JSON strings (chunked above the SCTP size cap — see
- * chunking.ts). A QUIC bi-stream is a byte stream with NO message
- * boundaries, so the iroh path frames each JSON message as:
+ * A QUIC bi-stream is a byte stream with NO message boundaries, so
+ * each JSON message is framed as:
  *
  *   [4-byte big-endian u32: payload byte length][UTF-8 JSON payload]
  *
- * No chunking envelope on this path — QUIC streams have no per-message
- * size cap, so a multi-megabyte `subscribe.response` is just one frame.
- * The length cap below only guards against a corrupt/hostile header
- * committing the reader to an absurd allocation.
+ * No chunking envelope (unlike the retired WebRTC path's SCTP cap) —
+ * QUIC streams have no per-message size cap, so a multi-megabyte
+ * `subscribe.response` is just one frame. The length cap below only
+ * guards against a corrupt/hostile header committing the reader to an
+ * absurd allocation.
  */
 
 /** ALPN for the Thinkite RPC protocol over iroh. Bump the trailing
