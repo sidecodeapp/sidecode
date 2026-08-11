@@ -127,6 +127,7 @@ class IrohWireTransport implements WireTransport {
       const rtt = this.conn.rtt();
       rttMs = rtt === undefined ? undefined : Number(rtt);
       paths = this.conn.paths().map((p) => ({
+        id: p.id,
         remoteAddr: p.remoteAddr,
         isSelected: p.isSelected,
         kind: p.isRelay ? ("relay" as const) : ("ip" as const),

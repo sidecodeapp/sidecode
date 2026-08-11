@@ -142,8 +142,8 @@ export default function SettingsHostScreen() {
             )}
             {diag?.paths?.map((p) => (
               <InfoRow
-                key={p.remoteAddr}
-                label={p.isSelected ? "Path ●" : "Path"}
+                key={p.id}
+                label={p.isSelected ? `Path ${p.id} ●` : `Path ${p.id}`}
               >
                 <Text
                   modifiers={[

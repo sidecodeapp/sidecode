@@ -18,6 +18,12 @@ import {
  */
 /** One network path of a live iroh connection (direct IP or relay). */
 export interface WirePathInfo {
+  /** Opaque per-path id — the ONLY stable unique key. `remoteAddr` is
+   *  NOT unique: a QUIC path is a (local interface ↔ remote addr)
+   *  four-tuple, so after roaming the old and new paths share one
+   *  remote addr and differ only on the local side, which the
+   *  snapshot doesn't show. */
+  id: string;
   /** `ip:port` for direct paths, relay URL for relay paths. */
   remoteAddr: string;
   /** True if QUIC currently sends application data over this path. */
