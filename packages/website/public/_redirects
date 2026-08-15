@@ -1,5 +1,5 @@
 # Flat download entry points — kept flat to match shipped app copy
-# (sidecode.app/mac, sidecode.app/ios).
+# (thinkite.dev/mac, thinkite.dev/ios).
 #
 # /ios is a static redirect to TestFlight, handled here at the assets layer
 # (no Worker invocation).
@@ -9,4 +9,4 @@
 # listed here, so the request falls through to the Worker instead of being
 # caught at the assets layer.
 
-/ios   https://testflight.apple.com/join/76e24ZVU   302
+/ios   https://testflight.apple.com/join/tFU8m3wU   302
