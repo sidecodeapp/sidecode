@@ -112,8 +112,8 @@
       "name": "@thinkite/desktop",
       "version": "0.2.0",
       "dependencies": {
-        "@astryxdesign/core": "^0.3.0",
-        "@astryxdesign/theme-neutral": "^0.3.0",
+        "@astryxdesign/core": "^0.4.5",
+        "@astryxdesign/theme-neutral": "^0.4.5",
         "@heroicons/react": "^2.2.0",
         "@legendapp/list": "catalog:",
         "@lydell/node-pty": "^1.2.0-beta.15",
@@ -251,9 +251,9 @@
 
     "@astrojs/telemetry": ["@astrojs/telemetry@3.3.3", "", { "dependencies": { "ci-info": "^4.4.0", "dset": "^3.1.4", "is-docker": "^4.0.0", "package-manager-detector": "^1.6.0" } }, "sha512-C1TLn5sPJr0x4vk56piHWKbnqlEB8BKyte5Y45V02U+D7BGO5eMqZDH5aPjnkXQWJggvmsTXxH03QMZ9NgWLzQ=="],
 
-    "@astryxdesign/core": ["@astryxdesign/core@0.3.0", "", { "dependencies": { "intl-messageformat": "^11.2.9" }, "peerDependencies": { "@stylexjs/stylex": "^0.19.0", "react": ">=19.0.0", "react-dom": ">=19.0.0" } }, "sha512-t2hHvR7AcwW0oKrnxCwbdEEE5Ytgy0Ug61DcYAl9BxAuV5z4XL0/kMo5DiPvX9jbDxzysmOa8ClnXqzxouRUVQ=="],
+    "@astryxdesign/core": ["@astryxdesign/core@0.4.5", "", { "dependencies": { "intl-messageformat": "^11.2.9" }, "peerDependencies": { "@stylexjs/stylex": "^0.19.0", "react": ">=19.0.0", "react-dom": ">=19.0.0" } }, "sha512-rbGaoAGZq1QImY2VWeWQNAh1ZqQa/KLWnmoOdy13lSjzMcAPDS6WrVv9fZfsNDx+DIG2oySLtMikwZk5WFl1Uw=="],
 
-    "@astryxdesign/theme-neutral": ["@astryxdesign/theme-neutral@0.3.0", "", { "dependencies": { "lucide-react": "^1.18.0" }, "peerDependencies": { "@astryxdesign/core": "0.3.0", "react": ">=19" } }, "sha512-CeKRfmTEtww60WZK4pSlW7bheBNyVPpgEliiXXUHRStXgcXOhwiUA3D/cXhMJlEx+VRgVxnzl0hMbWIr42RaVQ=="],
+    "@astryxdesign/theme-neutral": ["@astryxdesign/theme-neutral@0.4.5", "", { "dependencies": { "lucide-react": "^1.18.0" }, "peerDependencies": { "@astryxdesign/core": "0.4.5", "react": ">=19" } }, "sha512-+xLoTOwgHsQWUWbUVq6vxbCTi6vpIJeXEdkyHXBUE7NqjKl6aJAyqdx5V4SsTOx9fOUeVLPJ5HVtr59u4gKbKQ=="],
 
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
 

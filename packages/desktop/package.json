@@ -19,8 +19,8 @@
     "package:publish": "set -a; . ./.env.local 2>/dev/null || true; set +a; bun run --cwd ../protocol build && bun run --cwd ../daemon build && vite build && electron-builder --mac --arm64 --publish always"
   },
   "dependencies": {
-    "@astryxdesign/core": "^0.3.0",
-    "@astryxdesign/theme-neutral": "^0.3.0",
+    "@astryxdesign/core": "^0.4.5",
+    "@astryxdesign/theme-neutral": "^0.4.5",
     "@heroicons/react": "^2.2.0",
     "@legendapp/list": "catalog:",
     "@lydell/node-pty": "^1.2.0-beta.15",
