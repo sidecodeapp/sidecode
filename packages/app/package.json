@@ -18,7 +18,7 @@
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo/metro-runtime": "~57.0.9",
     "@expo/ui": "~57.0.10",
-    "@legendapp/list": "^3.3.5",
+    "@legendapp/list": "catalog:",
     "@nandorojo/galeria": "^3.0.3",
     "@noble/ed25519": "^3.1.0",
     "@noble/hashes": "^2.2.0",

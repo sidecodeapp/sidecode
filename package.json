@@ -17,6 +17,7 @@
       "react-dom": "19.2.3",
       "zod": "^4.4.3",
       "@types/node": "^24.12.2",
+      "@legendapp/list": "^3.3.7",
       "@tanstack/react-db": "^0.1.92",
       "@pierre/diffs": "^1.2.12",
       "tailwindcss": "^4.3.2"

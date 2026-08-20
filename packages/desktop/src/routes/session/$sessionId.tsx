@@ -1,8 +1,4 @@
-import {
-  ChatComposer,
-  ChatComposerInput,
-  ChatLayout,
-} from "@astryxdesign/core/Chat";
+import { ChatComposer, ChatComposerInput } from "@astryxdesign/core/Chat";
 import { DropdownMenu } from "@astryxdesign/core/DropdownMenu";
 import { Heading } from "@astryxdesign/core/Heading";
 import { Icon } from "@astryxdesign/core/Icon";
@@ -107,21 +103,30 @@ function Session({ sessionId }: { sessionId: string }) {
   // surface the error in the composer's status slot.
   const [draft, setDraft] = useState("");
   const [sendError, setSendError] = useState<string | null>(null);
+  // The just-sent prompt's uuid — TranscriptPanel pins that row near the top
+  // while the reply streams below it (anchoredEndSpace). iOS ChatPanel
+  // lifecycle: kept across turns (clearing collapses the reserved space and
+  // jumps the viewport), replaced by the next send, reset with the
+  // per-session remount; only a failed send rolls it back.
+  const [anchorUuid, setAnchorUuid] = useState<string | null>(null);
 
   const submit = (value: string) => {
     const text = value.trim();
     if (text === "" || session === undefined) return;
     setDraft("");
     setSendError(null);
+    const userMessageUuid = crypto.randomUUID();
+    setAnchorUuid(userMessageUuid);
     const tx = sendUserMessage({
       cliSessionId: sessionId,
-      userMessageUuid: crypto.randomUUID(),
+      userMessageUuid,
       text,
       cwd: session.cwd,
       model: currentModel ?? undefined,
     });
     void tx.isPersisted.promise.catch((err: unknown) => {
       setDraft(value);
+      setAnchorUuid((cur) => (cur === userMessageUuid ? null : cur));
       setSendError(err instanceof Error ? err.message : String(err));
     });
   };
@@ -185,17 +190,27 @@ function Session({ sessionId }: { sessionId: string }) {
                 </Text>
               </div>
             </div>
-            {/* ChatLayout owns the transcript scroll container (stick-to-
-                bottom + scroll button) and docks the composer. The whole
+            {/* Self-owned transcript shell: the LegendList inside
+                TranscriptPanel is the single scroll writer (landing, follow,
+                scroll button); the composer is a plain flex sibling — no
+                ChatLayout, so nothing else ever touches scrollTop. The whole
                 Session subtree remounts per session (SessionRoute key), so
                 scroll position, the follow lock, and the draft never
                 survive a switch (t3code resets on thread open too).
                 Composer slots stay reserved for their rightful owners
                 (headerContext = context usage, drawer = attachments); the
                 git status bar will wrap this composer in a stack. */}
-            <ChatLayout
-              className="min-h-0 flex-1"
-              composer={
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="relative min-h-0 flex-1">
+                <TranscriptPanel
+                  claudeSessionId={sessionId}
+                  isRunning={session.activity === "running"}
+                  anchorUuid={anchorUuid}
+                />
+              </div>
+              {/* Same max-w-3xl as the transcript's per-row column (t3code),
+                  so the composer aligns with the message column. */}
+              <div className="mx-auto w-full max-w-3xl shrink-0 pb-3">
                 <ChatComposer
                   onSubmit={submit}
                   onStop={stop}
@@ -233,13 +248,8 @@ function Session({ sessionId }: { sessionId: string }) {
                   }
                   input={<ChatComposerInput />}
                 />
-              }
-            >
-              <TranscriptPanel
-                claudeSessionId={sessionId}
-                isRunning={session.activity === "running"}
-              />
-            </ChatLayout>
+              </div>
+            </div>
           </div>
         </LayoutContent>
       }
