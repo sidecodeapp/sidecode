@@ -79,7 +79,7 @@ function toGroups(items: OrderedTimelineItem[]): TranscriptGroup[] {
 function ThinkingFooter({ active }: { active: boolean }) {
   return (
     <div
-      className={`mx-auto h-10 w-full min-w-0 max-w-3xl transition-opacity duration-200 ${active ? "opacity-100" : "opacity-0"}`}
+      className={`chat-col h-10 transition-opacity duration-200 ${active ? "opacity-100" : "opacity-0"}`}
       aria-hidden={!active}
     >
       <ChatMessage sender="assistant">
@@ -244,7 +244,7 @@ export function TranscriptPanel({
         // scrollbar at the pane edge. overflow-x-clip stops a wide code block
         // from blowing the column open.
         renderItem={({ item }) => (
-          <div className="mx-auto w-full min-w-0 max-w-3xl overflow-x-clip pb-3">
+          <div className="chat-col overflow-x-clip pb-3">
             {renderGroup(item)}
           </div>
         )}

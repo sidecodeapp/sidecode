@@ -207,10 +207,19 @@ function Session({ sessionId }: { sessionId: string }) {
                   isRunning={session.activity === "running"}
                   anchorUuid={anchorUuid}
                 />
+                {/* Fade the scrolled content into the actual backdrop just
+                    above the composer. `to-surface` (astryx tailwind bridge)
+                    = --color-background-surface — what AppShell's content
+                    section paints behind the transcript (measured): white in
+                    light, #262626 in dark. Theme defaults to mode="system",
+                    so a hardcoded white (or card's darker #1b1b1b) would
+                    streak in dark mode. Sits below the scroll button (z-10),
+                    scroll-transparent. */}
+                <div className="chat-col pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-b from-transparent to-surface" />
               </div>
-              {/* Same max-w-3xl as the transcript's per-row column (t3code),
-                  so the composer aligns with the message column. */}
-              <div className="mx-auto w-full max-w-3xl shrink-0 pb-3">
+              {/* chat-col = the shared reading column (styles.css), so the
+                  composer aligns with the transcript rows. */}
+              <div className="chat-col shrink-0 pb-3">
                 <ChatComposer
                   onSubmit={submit}
                   onStop={stop}
